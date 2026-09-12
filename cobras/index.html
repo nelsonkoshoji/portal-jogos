@@ -1,1 +1,503 @@
-oi cobras
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Jogo da Cobra — ADS Fatec Campinas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blueprint-bg: #0b1e33;
+    --blueprint-bg-deep: #071526;
+    --grid-line: rgba(120, 190, 255, 0.14);
+    --grid-line-strong: rgba(120, 190, 255, 0.28);
+    --cyan: #5ee7ff;
+    --cyan-bright: #9df6ff;
+    --accent: #ff8a3d;
+    --paper: #eaf4ff;
+    --paper-dim: rgba(234, 244, 255, 0.65);
+    --danger: #ff5c72;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--blueprint-bg-deep);
+    color: var(--paper);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 14px 40px;
+  }
+
+  .brand-row {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--paper-dim);
+    padding: 4px 2px 14px;
+    border-bottom: 1px solid var(--grid-line-strong);
+    margin-bottom: 18px;
+  }
+
+  .brand-row .tag {
+    color: var(--cyan);
+    font-weight: 700;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    margin: 0 0 4px;
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+
+  h1 .accent { color: var(--cyan-bright); }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--paper-dim);
+    text-align: center;
+    margin: 0 0 22px;
+  }
+
+  .hud {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+
+  .hud .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hud .stat .label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper-dim);
+  }
+
+  .hud .stat .value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cyan-bright);
+  }
+
+  .board-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1 / 1;
+    border: 2px solid var(--grid-line-strong);
+    border-radius: 10px;
+    background: var(--blueprint-bg);
+    box-shadow: 0 0 0 1px rgba(120,190,255,0.06), 0 18px 40px rgba(0,0,0,0.45);
+    overflow: hidden;
+  }
+
+  canvas#board {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .corner-tag {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: rgba(120,190,255,0.5);
+    pointer-events: none;
+  }
+  .corner-tag.tl { top: 6px; left: 8px; }
+  .corner-tag.br { bottom: 6px; right: 8px; }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 21, 38, 0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .overlay[hidden] { display: none; }
+
+  .overlay h2 {
+    margin: 0;
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+    color: var(--paper);
+  }
+  .overlay h2.danger { color: var(--danger); }
+
+  .overlay p {
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--paper-dim);
+  }
+
+  button.btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--cyan);
+    color: var(--blueprint-bg-deep);
+    border: none;
+    padding: 12px 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+  button.btn:active { transform: scale(0.96); }
+  button.btn:hover { background: var(--cyan-bright); }
+
+  .controls-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--paper-dim);
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(3, 56px);
+    gap: 6px;
+    margin-top: 18px;
+    user-select: none;
+  }
+
+  .dpad button {
+    background: rgba(94, 231, 255, 0.08);
+    border: 1px solid var(--grid-line-strong);
+    color: var(--cyan-bright);
+    border-radius: 8px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .dpad button:active { background: rgba(94, 231, 255, 0.25); }
+  .dpad .up { grid-column: 2; grid-row: 1; }
+  .dpad .left { grid-column: 1; grid-row: 2; }
+  .dpad .center { grid-column: 2; grid-row: 2; opacity: 0.15; pointer-events: none; }
+  .dpad .right { grid-column: 3; grid-row: 2; }
+  .dpad .down { grid-column: 2; grid-row: 3; }
+
+  footer {
+    margin-top: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(234, 244, 255, 0.4);
+    text-align: center;
+  }
+
+  @media (hover: hover) {
+    .dpad { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="brand-row">
+    <span>ADS <span class="tag">/</span> Fatec Campinas</span>
+    <span class="tag">Portas Abertas</span>
+  </div>
+
+  <h1>Jogo da <span class="accent">Cobra</span></h1>
+  <p class="subtitle">// construído por alunos de Análise e Desenvolvimento de Sistemas</p>
+
+  <div class="hud">
+    <div class="stat">
+      <span class="label">Pontos</span>
+      <span class="value" id="score">0</span>
+    </div>
+    <div class="stat" style="align-items:center;">
+      <span class="label">Recorde</span>
+      <span class="value" id="best">0</span>
+    </div>
+    <div class="stat" style="align-items:flex-end;">
+      <span class="label">Velocidade</span>
+      <span class="value" id="speed">1</span>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+    <span class="corner-tag tl">SNAKE.SYS</span>
+    <span class="corner-tag br">v1.0</span>
+    <canvas id="board"></canvas>
+
+    <div class="overlay" id="startOverlay">
+      <h2>Pronto para jogar?</h2>
+      <p>Use as setas do teclado (ou arraste no celular) para mover a cobra.<br>Coma os blocos e evite bater na parede ou em si mesma.</p>
+      <button class="btn" id="startBtn">Iniciar jogo</button>
+    </div>
+
+    <div class="overlay" id="overOverlay" hidden>
+      <h2 class="danger">Fim de jogo</h2>
+      <p id="overScore">Pontuação: 0</p>
+      <button class="btn" id="retryBtn">Jogar novamente</button>
+    </div>
+  </div>
+
+  <div class="dpad" id="dpad">
+    <button class="up" data-dir="up">▲</button>
+    <button class="left" data-dir="left">◀</button>
+    <div class="center"></div>
+    <button class="right" data-dir="right">▶</button>
+    <button class="down" data-dir="down">▼</button>
+  </div>
+
+  <p class="controls-hint">Teclado: setas / WASD &nbsp;·&nbsp; Celular: arraste na tela ou use os botões acima</p>
+
+  <footer>Fatec Campinas — Curso de ADS — Portas Abertas 2026</footer>
+
+<script>
+(function () {
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const speedEl = document.getElementById('speed');
+  const startOverlay = document.getElementById('startOverlay');
+  const overOverlay = document.getElementById('overOverlay');
+  const overScore = document.getElementById('overScore');
+  const startBtn = document.getElementById('startBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const dpad = document.getElementById('dpad');
+
+  const GRID = 20;
+  let cellSize, snake, dir, nextDir, food, score, best, speedLevel, tickMs, timer, running, boardPx;
+
+  function loadBest() {
+    try {
+      return parseInt(localStorage.getItem('snake-best-fatec') || '0', 10) || 0;
+    } catch (e) { return 0; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem('snake-best-fatec', String(v)); } catch (e) {}
+  }
+
+  function resizeCanvas() {
+    const wrap = canvas.parentElement;
+    boardPx = wrap.clientWidth;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = boardPx * dpr;
+    canvas.height = boardPx * dpr;
+    canvas.style.width = boardPx + 'px';
+    canvas.style.height = boardPx + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cellSize = boardPx / GRID;
+    draw();
+  }
+
+  function resetState() {
+    snake = [
+      { x: 9, y: 10 }, { x: 8, y: 10 }, { x: 7, y: 10 }
+    ];
+    dir = { x: 1, y: 0 };
+    nextDir = { x: 1, y: 0 };
+    score = 0;
+    speedLevel = 1;
+    tickMs = 150;
+    best = loadBest();
+    scoreEl.textContent = '0';
+    bestEl.textContent = String(best);
+    speedEl.textContent = '1';
+    placeFood();
+  }
+
+  function placeFood() {
+    let ok = false;
+    while (!ok) {
+      food = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
+      ok = !snake.some(s => s.x === food.x && s.y === food.y);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, boardPx, boardPx);
+
+    // subtle grid
+    ctx.strokeStyle = 'rgba(120,190,255,0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < GRID; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * cellSize, 0);
+      ctx.lineTo(i * cellSize, boardPx);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i * cellSize);
+      ctx.lineTo(boardPx, i * cellSize);
+      ctx.stroke();
+    }
+
+    // food
+    ctx.fillStyle = '#ff8a3d';
+    const fp = 3;
+    ctx.beginPath();
+    ctx.roundRect(food.x * cellSize + fp, food.y * cellSize + fp, cellSize - fp * 2, cellSize - fp * 2, 4);
+    ctx.fill();
+
+    // snake
+    snake.forEach((seg, i) => {
+      const isHead = i === 0;
+      ctx.fillStyle = isHead ? '#9df6ff' : '#5ee7ff';
+      const p = isHead ? 1 : 2;
+      ctx.beginPath();
+      ctx.roundRect(seg.x * cellSize + p, seg.y * cellSize + p, cellSize - p * 2, cellSize - p * 2, 4);
+      ctx.fill();
+    });
+  }
+
+  function tick() {
+    dir = nextDir;
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+    if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID || snake.some(s => s.x === head.x && s.y === head.y)) {
+      gameOver();
+      return;
+    }
+
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y) {
+      score += 10;
+      scoreEl.textContent = String(score);
+      if (score % 50 === 0 && tickMs > 70) {
+        tickMs -= 12;
+        speedLevel++;
+        speedEl.textContent = String(speedLevel);
+        restartTimer();
+      }
+      placeFood();
+    } else {
+      snake.pop();
+    }
+
+    draw();
+  }
+
+  function restartTimer() {
+    clearInterval(timer);
+    timer = setInterval(tick, tickMs);
+  }
+
+  function gameOver() {
+    running = false;
+    clearInterval(timer);
+    if (score > best) {
+      best = score;
+      saveBest(best);
+      bestEl.textContent = String(best);
+    }
+    overScore.textContent = 'Pontuação: ' + score;
+    overOverlay.hidden = false;
+  }
+
+  function startGame() {
+    resetState();
+    startOverlay.hidden = true;
+    overOverlay.hidden = true;
+    running = true;
+    draw();
+    restartTimer();
+  }
+
+  function setDirection(nx, ny) {
+    if (!running) return;
+    if (nx === -dir.x && ny === -dir.y) return; // no reversing
+    nextDir = { x: nx, y: ny };
+  }
+
+  document.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'ArrowUp': case 'w': case 'W': setDirection(0, -1); break;
+      case 'ArrowDown': case 's': case 'S': setDirection(0, 1); break;
+      case 'ArrowLeft': case 'a': case 'A': setDirection(-1, 0); break;
+      case 'ArrowRight': case 'd': case 'D': setDirection(1, 0); break;
+    }
+  });
+
+  dpad.querySelectorAll('button[data-dir]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const map = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+      const [x, y] = map[btn.dataset.dir];
+      setDirection(x, y);
+    });
+  });
+
+  // swipe controls
+  let touchStart = null;
+  canvas.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    touchStart = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (!touchStart) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (Math.abs(dx) > 20) setDirection(dx > 0 ? 1 : -1, 0);
+    } else {
+      if (Math.abs(dy) > 20) setDirection(0, dy > 0 ? 1 : -1);
+    }
+    touchStart = null;
+  }, { passive: true });
+
+  startBtn.addEventListener('click', startGame);
+  retryBtn.addEventListener('click', startGame);
+
+  window.addEventListener('resize', resizeCanvas);
+
+  resetState();
+  resizeCanvas();
+})();
+</script>
+</body>
+</html>
