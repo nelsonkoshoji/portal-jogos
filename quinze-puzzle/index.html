@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo dos Quinze</title>
+<style>
+  :root{
+    --bg:#12141c;
+    --surface:#1b1e2a;
+    --surface-2:#242838;
+    --line:#333850;
+    --text:#f1efe6;
+    --muted:#8d92a8;
+    --accent:#ff6b4a;
+    --accent-ink:#2a0f08;
+    --good:#4adeda;
+    --shadow: 0 18px 40px -20px rgba(0,0,0,.6);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f4f2ec;
+      --surface:#ffffff;
+      --surface-2:#eae6da;
+      --line:#d9d4c4;
+      --text:#1c1c1c;
+      --muted:#6b6a60;
+      --accent:#e0562e;
+      --accent-ink:#fff3ee;
+      --good:#0f8f89;
+      --shadow: 0 18px 40px -20px rgba(30,25,10,.25);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f4f2ec;
+    --surface:#ffffff;
+    --surface-2:#eae6da;
+    --line:#d9d4c4;
+    --text:#1c1c1c;
+    --muted:#6b6a60;
+    --accent:#e0562e;
+    --accent-ink:#fff3ee;
+    --good:#0f8f89;
+    --shadow: 0 18px 40px -20px rgba(30,25,10,.25);
+  }
+  :root[data-theme="dark"]{
+    --bg:#12141c;
+    --surface:#1b1e2a;
+    --surface-2:#242838;
+    --line:#333850;
+    --text:#f1efe6;
+    --muted:#8d92a8;
+    --accent:#ff6b4a;
+    --accent-ink:#2a0f08;
+    --good:#4adeda;
+    --shadow: 0 18px 40px -20px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Manrope", ui-sans-serif, system-ui, sans-serif;
+    padding:32px 16px 56px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:28px;
+  }
+  h1, .num, button{ text-wrap:balance; }
+
+  .eyebrow{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:.72rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  h1{
+    font-family:"Fraunces", Georgia, serif;
+    font-weight:600;
+    font-size:clamp(2rem, 5vw, 2.9rem);
+    margin:.15em 0 0;
+    letter-spacing:-.01em;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:.95rem;
+    max-width:46ch;
+    text-align:center;
+    margin:0;
+  }
+  header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    text-align:center;
+  }
+
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    width:100%;
+    max-width:420px;
+  }
+
+  .hud{
+    width:100%;
+    display:flex;
+    gap:10px;
+  }
+  .stat{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .stat-label{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:.62rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .stat-value{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size:1.35rem;
+    font-weight:600;
+  }
+
+  .board{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:10px;
+    box-shadow:var(--shadow);
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    grid-template-rows:repeat(4, 1fr);
+    gap:8px;
+  }
+  .tile{
+    appearance:none;
+    border:none;
+    border-radius:12px;
+    background:var(--surface-2);
+    color:var(--text);
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size:clamp(1.3rem, 5vw, 1.8rem);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+    user-select:none;
+  }
+  .tile:hover:not(:disabled){
+    background:var(--line);
+  }
+  .tile:active:not(:disabled){
+    transform:scale(.94);
+  }
+  .tile:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+  .tile.empty{
+    background:transparent;
+    cursor:default;
+    pointer-events:none;
+  }
+  .tile.home{
+    color:var(--good);
+  }
+
+  .win-banner{
+    display:none;
+    align-items:center;
+    gap:10px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-radius:14px;
+    padding:12px 18px;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:.82rem;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .win-banner.show{ display:flex; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    width:100%;
+  }
+  button.action{
+    flex:1;
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--text);
+    font-family:"Manrope", sans-serif;
+    font-weight:600;
+    font-size:.92rem;
+    padding:12px 16px;
+    border-radius:12px;
+    cursor:pointer;
+    transition: background .15s ease, border-color .15s ease, transform .08s ease;
+  }
+  button.action:hover{
+    border-color:var(--accent);
+  }
+  button.action:active{
+    transform:scale(.98);
+  }
+  button.action.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--accent-ink);
+  }
+
+  .best{
+    color:var(--muted);
+    font-size:.8rem;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+  }
+
+  footer{
+    color:var(--muted);
+    font-size:.78rem;
+    text-align:center;
+    max-width:40ch;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .tile, button.action{ transition:none; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Manrope:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+</head>
+<body>
+
+<header>
+  <span class="eyebrow">Deslizante · 4×4</span>
+  <h1>Jogo dos Quinze</h1>
+  <p class="sub">Arraste as peças até 15 até que fiquem em ordem, com o espaço vazio no canto inferior direito.</p>
+</header>
+
+<div class="stage">
+  <div class="hud">
+    <div class="stat">
+      <span class="stat-label">Movimentos</span>
+      <span class="stat-value" id="moves">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Tempo</span>
+      <span class="stat-value" id="timer">00:00</span>
+    </div>
+  </div>
+
+  <div class="board" id="board" role="group" aria-label="Tabuleiro do jogo dos quinze"></div>
+
+  <div class="win-banner" id="winBanner">🎉 Resolvido!</div>
+
+  <div class="controls">
+    <button class="action primary" id="shuffleBtn">Embaralhar</button>
+    <button class="action" id="resetBtn">Reiniciar</button>
+  </div>
+  <span class="best" id="bestLine"></span>
+</div>
+
+<footer>Clique ou toque em uma peça vizinha ao espaço vazio para movê-la. As setas do teclado também funcionam.</footer>
+
+<script>
+(function(){
+  var SIZE = 4;
+  var EMPTY = 0;
+  var boardEl = document.getElementById('board');
+  var movesEl = document.getElementById('moves');
+  var timerEl = document.getElementById('timer');
+  var winBanner = document.getElementById('winBanner');
+  var bestLine = document.getElementById('bestLine');
+
+  var state = {
+    tiles: [],       // length 16, values 0..15, 0 = empty
+    moves: 0,
+    startTime: null,
+    elapsed: 0,
+    ticking: null,
+    won: false
+  };
+
+  function solved(){
+    var t = [];
+    for (var i = 1; i <= 15; i++) t.push(i);
+    t.push(EMPTY);
+    return t;
+  }
+
+  function emptyIndex(tiles){
+    return tiles.indexOf(EMPTY);
+  }
+
+  function neighbors(idx){
+    var r = Math.floor(idx / SIZE), c = idx % SIZE;
+    var out = [];
+    if (r > 0) out.push(idx - SIZE);
+    if (r < SIZE - 1) out.push(idx + SIZE);
+    if (c > 0) out.push(idx - 1);
+    if (c < SIZE - 1) out.push(idx + 1);
+    return out;
+  }
+
+  function isSolved(tiles){
+    var s = solved();
+    for (var i = 0; i < 16; i++) if (tiles[i] !== s[i]) return false;
+    return true;
+  }
+
+  function shuffle(){
+    var tiles = solved();
+    var empty = 15;
+    var lastMoved = -1;
+    // Random walk of valid moves guarantees a solvable, well-mixed board.
+    for (var i = 0; i < 400; i++) {
+      var opts = neighbors(empty).filter(function(n){ return n !== lastMoved; });
+      var pick = opts[Math.floor(Math.random() * opts.length)];
+      lastMoved = empty;
+      tiles[empty] = tiles[pick];
+      tiles[pick] = EMPTY;
+      empty = pick;
+    }
+    return tiles;
+  }
+
+  function fmtTime(sec){
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function stopTicking(){
+    if (state.ticking) { clearInterval(state.ticking); state.ticking = null; }
+  }
+
+  function startTicking(){
+    stopTicking();
+    state.startTime = Date.now() - state.elapsed * 1000;
+    state.ticking = setInterval(function(){
+      state.elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      timerEl.textContent = fmtTime(state.elapsed);
+    }, 250);
+  }
+
+  function render(){
+    boardEl.innerHTML = '';
+    var eIdx = emptyIndex(state.tiles);
+    var movable = neighbors(eIdx);
+    for (var i = 0; i < 16; i++) {
+      var val = state.tiles[i];
+      var btn = document.createElement('button');
+      btn.className = 'tile';
+      btn.setAttribute('data-idx', i);
+      if (val === EMPTY) {
+        btn.className += ' empty';
+        btn.setAttribute('tabindex', '-1');
+        btn.setAttribute('aria-hidden', 'true');
+      } else {
+        btn.textContent = val;
+        btn.disabled = state.won;
+        if (val === i + 1) btn.className += ' home';
+        if (movable.indexOf(i) !== -1) btn.className += ' movable';
+        btn.setAttribute('aria-label', 'Peça ' + val);
+      }
+      boardEl.appendChild(btn);
+    }
+    movesEl.textContent = state.moves;
+    timerEl.textContent = fmtTime(state.elapsed);
+    winBanner.classList.toggle('show', state.won);
+  }
+
+  function tryMove(idx){
+    if (state.won) return;
+    var eIdx = emptyIndex(state.tiles);
+    if (neighbors(eIdx).indexOf(idx) === -1) return;
+    if (state.moves === 0 && !state.startTime) startTicking();
+    state.tiles[eIdx] = state.tiles[idx];
+    state.tiles[idx] = EMPTY;
+    state.moves++;
+    if (isSolved(state.tiles)) {
+      state.won = true;
+      stopTicking();
+      saveBest();
+    }
+    render();
+  }
+
+  function saveBest(){
+    try {
+      var key = 'quinze-best-moves';
+      var prevTime = parseInt(localStorage.getItem('quinze-best-time') || '', 10);
+      var better = isNaN(prevTime) || state.elapsed < prevTime;
+      if (better) {
+        localStorage.setItem(key, String(state.moves));
+        localStorage.setItem('quinze-best-time', String(state.elapsed));
+      }
+      showBest();
+    } catch (e) { /* private mode or blocked storage: ignore */ }
+  }
+
+  function showBest(){
+    try {
+      var m = localStorage.getItem('quinze-best-moves');
+      var t = localStorage.getItem('quinze-best-time');
+      if (m && t) {
+        bestLine.textContent = 'Melhor: ' + m + ' movimentos em ' + fmtTime(parseInt(t, 10));
+      } else {
+        bestLine.textContent = '';
+      }
+    } catch (e) { bestLine.textContent = ''; }
+  }
+
+  function newGame(){
+    state.tiles = shuffle();
+    state.moves = 0;
+    state.elapsed = 0;
+    state.startTime = null;
+    state.won = false;
+    stopTicking();
+    render();
+  }
+
+  boardEl.addEventListener('click', function(e){
+    var btn = e.target.closest('.tile');
+    if (!btn || btn.classList.contains('empty')) return;
+    tryMove(parseInt(btn.getAttribute('data-idx'), 10));
+  });
+
+  document.addEventListener('keydown', function(e){
+    var arrows = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+    if (arrows.indexOf(e.key) === -1) return;
+    e.preventDefault();
+    var eIdx = emptyIndex(state.tiles);
+    var r = Math.floor(eIdx / SIZE), c = eIdx % SIZE;
+    var target = null;
+    // Pressing an arrow moves the tile in that direction into the empty slot.
+    if (e.key === 'ArrowUp' && r < SIZE - 1) target = eIdx + SIZE;
+    if (e.key === 'ArrowDown' && r > 0) target = eIdx - SIZE;
+    if (e.key === 'ArrowLeft' && c < SIZE - 1) target = eIdx + 1;
+    if (e.key === 'ArrowRight' && c > 0) target = eIdx - 1;
+    if (target !== null) tryMove(target);
+  });
+
+  document.getElementById('shuffleBtn').addEventListener('click', newGame);
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    state.tiles = solved();
+    state.moves = 0;
+    state.elapsed = 0;
+    state.startTime = null;
+    state.won = false;
+    stopTicking();
+    render();
+  });
+
+  newGame();
+  showBest();
+  render();
+})();
+</script>
+</body>
+</html>
