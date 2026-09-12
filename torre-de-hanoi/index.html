@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Torre de Hanói — Portas Abertas ADS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1220;
+    --bg-grid: rgba(120,170,255,0.06);
+    --panel:#101a2e;
+    --panel-border: rgba(130,180,255,0.18);
+    --blue:#5aa9ff;
+    --blue-dim: rgba(90,169,255,0.35);
+    --ink:#e8f0ff;
+    --ink-dim:#8fa3c4;
+    --accent:#ffb454;
+    --good:#57e39a;
+    --rod:#7a8bb0;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/28px 28px,
+      var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: env(safe-area-inset-top,0) 0 max(24px, env(safe-area-inset-bottom,0)) 0;
+  }
+  .wrap{
+    width:100%;
+    max-width:480px;
+    padding: 18px 16px 28px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--blue);
+    opacity:.85;
+  }
+  h1{
+    font-size:26px;
+    margin:4px 0 2px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--ink-dim);
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:14px;
+    margin-top:14px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.2) inset;
+  }
+
+  .stats{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  .stat{
+    flex:1;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:10px 8px;
+    text-align:center;
+  }
+  .stat .n{
+    font-family:'JetBrains Mono', monospace;
+    font-size:20px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .stat .l{
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin-top:2px;
+  }
+
+  .controls-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .discs-control{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .discs-control .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .stepper{
+    display:flex;
+    align-items:center;
+    background:#0b1424;
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .stepper button{
+    width:36px;height:36px;
+    background:transparent;
+    border:none;
+    color:var(--blue);
+    font-size:18px;
+    font-weight:700;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .stepper .val{
+    width:30px;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:15px;
+  }
+
+  .btn{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    border-radius:10px;
+    border:1px solid var(--panel-border);
+    background:#0b1424;
+    color:var(--ink);
+    padding:10px 14px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn.primary{
+    background: linear-gradient(180deg, var(--blue), #3d7dd8);
+    border-color: transparent;
+    color:#051022;
+  }
+  .btn.ghost{
+    background:transparent;
+  }
+  .btn:disabled{ opacity:.4; }
+
+  .actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .actions .btn{ flex:1; justify-content:center; }
+
+  /* board */
+  .board{
+    margin-top:16px;
+    background: radial-gradient(120% 100% at 50% 0%, rgba(90,169,255,0.08), transparent 60%), var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:16px;
+    padding: 20px 10px 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .pegs{
+    display:flex;
+    justify-content:space-around;
+    align-items:flex-end;
+    height:220px;
+    position:relative;
+  }
+  .peg{
+    width:31%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    position:relative;
+    cursor:pointer;
+    border-radius:10px 10px 0 0;
+  }
+  .peg.selected{
+    background: rgba(90,169,255,0.10);
+    box-shadow: inset 0 0 0 1.5px var(--blue-dim);
+  }
+  .peg.target-hint{
+    background: rgba(87,227,154,0.08);
+  }
+  .rod{
+    position:absolute;
+    bottom:12px;
+    width:6px;
+    border-radius:4px;
+    background: linear-gradient(180deg, var(--rod), #3d4a6b);
+  }
+  .base{
+    position:absolute;
+    bottom:0;
+    left:6%;
+    right:6%;
+    height:12px;
+    border-radius:6px;
+    background: linear-gradient(180deg, #3a4a70, #24304d);
+  }
+  .peg-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+    margin-bottom:6px;
+    letter-spacing:.06em;
+  }
+  .discs-stack{
+    display:flex;
+    flex-direction:column-reverse;
+    align-items:center;
+    gap:4px;
+    position:absolute;
+    bottom:12px;
+    width:100%;
+  }
+  .disc{
+    height:20px;
+    border-radius:6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.15);
+    transition: transform .18s ease;
+  }
+  .disc.moving{
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+  }
+
+  .recursion-log{
+    margin-top:14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--blue);
+    background:#0b1424;
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:10px 12px;
+    min-height:18px;
+    line-height:1.5;
+    word-break: break-word;
+  }
+  .recursion-log .dim{ color:var(--ink-dim); }
+
+  .win-banner{
+    margin-top:14px;
+    text-align:center;
+    background: linear-gradient(180deg, rgba(87,227,154,.16), rgba(87,227,154,.04));
+    border:1px solid rgba(87,227,154,.4);
+    border-radius:12px;
+    padding:14px;
+    display:none;
+  }
+  .win-banner.show{ display:block; }
+  .win-banner .title{
+    font-weight:700;
+    font-size:16px;
+    color:var(--good);
+  }
+  .win-banner .desc{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-dim);
+    margin-top:4px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    color:var(--ink-dim);
+    opacity:.7;
+  }
+
+  @keyframes shake {
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+  .shake{ animation: shake .22s ease; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">ADS · Fatec Campinas</div>
+    <h1>Torre de Hanói</h1>
+    <div class="sub">estruturas de dados &amp; recursão</div>
+  </header>
+
+  <div class="panel">
+    <div class="controls-row">
+      <div class="discs-control">
+        <span class="label">Discos</span>
+        <div class="stepper">
+          <button id="minus" aria-label="menos discos">−</button>
+          <span class="val" id="discCount">3</span>
+          <button id="plus" aria-label="mais discos">+</button>
+        </div>
+      </div>
+      <button class="btn primary" id="newGameBtn">Novo jogo</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="n" id="moveCount">0</div>
+      <div class="l">Movimentos</div>
+    </div>
+    <div class="stat">
+      <div class="n" id="minMoves">7</div>
+      <div class="l">Mínimo</div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="pegs" id="pegs">
+      <div class="peg" data-peg="0">
+        <div class="peg-label">A</div>
+        <div class="rod" id="rod0"></div>
+        <div class="discs-stack" id="stack0"></div>
+      </div>
+      <div class="peg" data-peg="1">
+        <div class="peg-label">B</div>
+        <div class="rod" id="rod1"></div>
+        <div class="discs-stack" id="stack1"></div>
+      </div>
+      <div class="peg" data-peg="2">
+        <div class="peg-label">C</div>
+        <div class="rod" id="rod2"></div>
+        <div class="discs-stack" id="stack2"></div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+
+  <div class="recursion-log" id="log">Toque numa torre para escolher a origem, depois em outra para mover o disco.</div>
+
+  <div class="actions">
+    <button class="btn ghost" id="undoBtn">↺ Desfazer</button>
+    <button class="btn" id="solveBtn">▶ Resolver (recursivo)</button>
+  </div>
+
+  <div class="win-banner" id="winBanner">
+    <div class="title">🎉 Resolvido!</div>
+    <div class="desc" id="winDesc"></div>
+  </div>
+
+  <footer>Fatec Portas Abertas · Análise e Desenvolvimento de Sistemas</footer>
+</div>
+
+<script>
+(function(){
+  const DISC_COLORS = ['#5aa9ff','#7dd3fc','#a78bfa','#f472b6','#ffb454','#57e39a','#f87171'];
+
+  let n = 3;
+  let pegs = [[],[],[]]; // arrays of disc sizes, index0 = bottom
+  let selected = null;
+  let moveCount = 0;
+  let solving = false;
+  let history = [];
+
+  const stackEls = [document.getElementById('stack0'), document.getElementById('stack1'), document.getElementById('stack2')];
+  const rodEls = [document.getElementById('rod0'), document.getElementById('rod1'), document.getElementById('rod2')];
+  const pegEls = Array.from(document.querySelectorAll('.peg'));
+  const logEl = document.getElementById('log');
+  const moveCountEl = document.getElementById('moveCount');
+  const minMovesEl = document.getElementById('minMoves');
+  const discCountEl = document.getElementById('discCount');
+  const winBanner = document.getElementById('winBanner');
+  const winDesc = document.getElementById('winDesc');
+  const solveBtn = document.getElementById('solveBtn');
+  const undoBtn = document.getElementById('undoBtn');
+
+  function sizeToWidth(size){
+    // size 1 = smallest .. n = largest
+    const minW = 34, maxW = 128;
+    if(n === 1) return maxW;
+    return Math.round(minW + (maxW-minW) * ((size-1)/(n-1)));
+  }
+
+  function rodHeight(){
+    return Math.min(190, 26 + n*22);
+  }
+
+  function setup(discs){
+    n = discs;
+    pegs = [[],[],[]];
+    for(let s=n; s>=1; s--) pegs[0].push(s);
+    selected = null;
+    moveCount = 0;
+    history = [];
+    solving = false;
+    discCountEl.textContent = n;
+    minMovesEl.textContent = Math.pow(2,n) - 1;
+    moveCountEl.textContent = 0;
+    winBanner.classList.remove('show');
+    solveBtn.disabled = false;
+    solveBtn.textContent = '▶ Resolver (recursivo)';
+    log('Toque numa torre para escolher a origem, depois em outra para mover o disco.');
+    render();
+  }
+
+  function log(html){
+    logEl.innerHTML = html;
+  }
+
+  function render(){
+    const rh = rodHeight();
+    rodEls.forEach(r => r.style.height = rh + 'px');
+    pegEls.forEach((el, i) => {
+      el.classList.toggle('selected', selected === i);
+    });
+
+    for(let p=0;p<3;p++){
+      stackEls[p].innerHTML = '';
+      pegs[p].forEach((size) => {
+        const d = document.createElement('div');
+        d.className = 'disc';
+        d.style.width = sizeToWidth(size) + 'px';
+        d.style.background = `linear-gradient(180deg, ${DISC_COLORS[(size-1)%DISC_COLORS.length]}, ${shade(DISC_COLORS[(size-1)%DISC_COLORS.length])})`;
+        stackEls[p].appendChild(d);
+      });
+    }
+    moveCountEl.textContent = moveCount;
+  }
+
+  function shade(hex){
+    // quick darken for gradient bottom
+    const c = hex.replace('#','');
+    const r = Math.max(0, parseInt(c.substr(0,2),16)-40);
+    const g = Math.max(0, parseInt(c.substr(2,2),16)-40);
+    const b = Math.max(0, parseInt(c.substr(4,2),16)-40);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function canMove(from, to){
+    if(pegs[from].length === 0) return false;
+    if(pegs[to].length === 0) return true;
+    return pegs[to][pegs[to].length-1] > pegs[from][pegs[from].length-1];
+  }
+
+  function doMove(from, to, record){
+    const disc = pegs[from].pop();
+    pegs[to].push(disc);
+    moveCount++;
+    if(record) history.push([from,to]);
+    render();
+    checkWin();
+  }
+
+  function checkWin(){
+    if(pegs[2].length === n){
+      const min = Math.pow(2,n)-1;
+      winDesc.textContent = moveCount === min
+        ? `Perfeito — solução ótima em ${moveCount} movimentos.`
+        : `Concluído em ${moveCount} movimentos (mínimo possível: ${min}).`;
+      winBanner.classList.add('show');
+      log('Torre completa em <b>C</b>. Toque em "Novo jogo" para jogar novamente.');
+    }
+  }
+
+  const pegLetters = ['A','B','C'];
+
+  pegEls.forEach(el => {
+    el.addEventListener('click', () => {
+      if(solving) return;
+      const idx = parseInt(el.dataset.peg, 10);
+      if(selected === null){
+        if(pegs[idx].length === 0){
+          shakeEl(el);
+          return;
+        }
+        selected = idx;
+        log(`Origem: <b>${pegLetters[idx]}</b>. Toque no destino.`);
+        render();
+      } else if(selected === idx){
+        selected = null;
+        log('Seleção cancelada.');
+        render();
+      } else {
+        if(canMove(selected, idx)){
+          const fromL = pegLetters[selected], toL = pegLetters[idx];
+          doMove(selected, idx, true);
+          if(!winBanner.classList.contains('show')){
+            log(`Disco movido de <b>${fromL}</b> → <b>${toL}</b>.`);
+          }
+          selected = null;
+          render();
+        } else {
+          log(`<span style="color:#f87171">Movimento inválido:</span> não é possível colocar um disco maior sobre um menor.`);
+          shakeEl(el);
+          selected = null;
+          render();
+        }
+      }
+    });
+  });
+
+  function shakeEl(el){
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }
+
+  undoBtn.addEventListener('click', function(){
+    if(solving || history.length === 0) return;
+    const [from, to] = history.pop();
+    const disc = pegs[to].pop();
+    pegs[from].push(disc);
+    moveCount = Math.max(0, moveCount - 1);
+    selected = null;
+    winBanner.classList.remove('show');
+    log('Último movimento desfeito.');
+    render();
+  });
+
+  document.getElementById('newGameBtn').addEventListener('click', () => setup(n));
+  document.getElementById('minus').addEventListener('click', () => {
+    if(solving) return;
+    if(n > 2) setup(n-1);
+  });
+  document.getElementById('plus').addEventListener('click', () => {
+    if(solving) return;
+    if(n < 7) setup(n+1);
+  });
+
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  async function solve(){
+    if(solving) return;
+    // reset board to solved-start state but keep n
+    setup(n);
+    solving = true;
+    selected = null;
+    solveBtn.disabled = true;
+    solveBtn.textContent = '⏸ Resolvendo…';
+    undoBtn.disabled = true;
+
+    const speedMs = n <= 4 ? 550 : (n <= 5 ? 380 : 260);
+
+    async function hanoi(k, from, aux, to, depth){
+      if(k === 0) return;
+      await hanoi(k-1, from, to, aux, depth+1);
+      const indent = '&nbsp;'.repeat(depth*2);
+      log(`${indent}<span class="dim">mover(${k}, ${pegLetters[from]}→${pegLetters[to]})</span>`);
+      await sleep(speedMs);
+      doMove(from, to, false);
+      await sleep(Math.max(60, speedMs*0.25));
+      await hanoi(k-1, aux, from, to, depth+1);
+    }
+
+    await hanoi(n, 0, 1, 2, 0);
+
+    solving = false;
+    solveBtn.disabled = false;
+    solveBtn.textContent = '▶ Resolver (recursivo)';
+    undoBtn.disabled = false;
+  }
+
+  solveBtn.addEventListener('click', solve);
+
+  setup(3);
+})();
+</script>
+</body>
+</html>
