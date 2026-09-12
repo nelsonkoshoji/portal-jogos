@@ -29,8 +29,29 @@
         }
         #status {
             font-size: 1.2rem;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             color: #94a3b8;
+            min-height: 1.6rem;
+        }
+        .config {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .config label {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+        select {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.95rem;
         }
         .board {
             display: grid;
@@ -41,6 +62,10 @@
             padding: 8px;
             border-radius: 12px;
             margin-bottom: 20px;
+            position: relative;
+        }
+        .board.thinking {
+            opacity: 0.85;
         }
         .cell {
             background-color: #1e293b;
@@ -57,6 +82,13 @@
         .cell:hover {
             background-color: #334155;
         }
+        .cell.taken, .cell.disabled {
+            cursor: default;
+        }
+        .cell.win {
+            background-color: #0ea5e9;
+            color: #0f172a;
+        }
         button {
             background-color: #38bdf8;
             color: #0f172a;
@@ -67,6 +99,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s;
+            margin: 4px;
         }
         button:hover {
             background-color: #0ea5e9;
@@ -80,6 +113,17 @@
         .voltar:hover {
             text-decoration: underline;
         }
+        .score {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+        .score span b {
+            color: #f8fafc;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +131,23 @@
     <div class="container">
         <h1>❌ Jogo da Velha ⭕</h1>
         <div id="status">Vez do jogador: X</div>
-        
+
+        <div class="config">
+            <label for="difficulty">Dificuldade do computador:</label>
+            <select id="difficulty">
+                <option value="1.0">Impossível (nunca perde)</option>
+                <option value="0.7">Difícil</option>
+                <option value="0.4">Médio</option>
+                <option value="0.15">Fácil</option>
+            </select>
+        </div>
+
+        <div class="score">
+            <span>Você (X): <b id="scoreX">0</b></span>
+            <span>Computador (O): <b id="scoreO">0</b></span>
+            <span>Empates: <b id="scoreD">0</b></span>
+        </div>
+
         <div class="board" id="board">
             <div class="cell" data-index="0"></div>
             <div class="cell" data-index="1"></div>
@@ -100,24 +160,150 @@
             <div class="cell" data-index="8"></div>
         </div>
 
-        <button id="restart">Reiniciar Jogo</button>
+        <div>
+            <button id="restart">Reiniciar Jogo</button>
+        </div>
 
     </div>
 
     <script>
-        const board = document.getElementById('board');
+        const boardEl = document.getElementById('board');
         const statusDisplay = document.getElementById('status');
         const restartButton = document.getElementById('restart');
-        
+        const difficultySelect = document.getElementById('difficulty');
+        const scoreXEl = document.getElementById('scoreX');
+        const scoreOEl = document.getElementById('scoreO');
+        const scoreDEl = document.getElementById('scoreD');
+
+        const HUMAN = 'X';
+        const CPU = 'O';
+
         let gameState = ["", "", "", "", "", "", "", "", ""];
-        let currentPlayer = "X";
         let gameActive = true;
+        let scores = { X: 0, O: 0, D: 0 };
 
         const winningConditions = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
             [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
-            [0, 4, 8], [2, 4, 6]            // Diagonais
+            [0, 4, 8], [2, 4, 6]             // Diagonais
         ];
+
+        function getWinner(state) {
+            for (const [a, b, c] of winningConditions) {
+                if (state[a] && state[a] === state[b] && state[b] === state[c]) {
+                    return { player: state[a], line: [a, b, c] };
+                }
+            }
+            if (!state.includes("")) return { player: 'D', line: [] };
+            return null;
+        }
+
+        // ---- Minimax com poda alfa-beta ----
+        // CPU (O) é o maximizador, HUMAN (X) é o minimizador.
+        function minimax(state, depth, isMaximizing, alpha, beta) {
+            const result = getWinner(state);
+            if (result) {
+                if (result.player === CPU) return 10 - depth;
+                if (result.player === HUMAN) return depth - 10;
+                return 0; // empate
+            }
+
+            if (isMaximizing) {
+                let best = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] === "") {
+                        state[i] = CPU;
+                        best = Math.max(best, minimax(state, depth + 1, false, alpha, beta));
+                        state[i] = "";
+                        alpha = Math.max(alpha, best);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return best;
+            } else {
+                let best = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (state[i] === "") {
+                        state[i] = HUMAN;
+                        best = Math.min(best, minimax(state, depth + 1, true, alpha, beta));
+                        state[i] = "";
+                        beta = Math.min(beta, best);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return best;
+            }
+        }
+
+        function getBestMove(state) {
+            let bestScore = -Infinity;
+            let bestMoves = [];
+            for (let i = 0; i < 9; i++) {
+                if (state[i] === "") {
+                    state[i] = CPU;
+                    const score = minimax(state, 0, false, -Infinity, Infinity);
+                    state[i] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMoves = [i];
+                    } else if (score === bestScore) {
+                        bestMoves.push(i);
+                    }
+                }
+            }
+            return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+        }
+
+        function getRandomMove(state) {
+            const empties = [];
+            for (let i = 0; i < 9; i++) if (state[i] === "") empties.push(i);
+            return empties[Math.floor(Math.random() * empties.length)];
+        }
+
+        // A "dificuldade" é a probabilidade de o computador jogar a jogada ótima
+        // do minimax; o restante das vezes ele joga uma jogada válida aleatória.
+        function cpuChooseMove(state) {
+            const skill = parseFloat(difficultySelect.value);
+            if (Math.random() < skill) {
+                return getBestMove(state);
+            }
+            return getRandomMove(state);
+        }
+
+        function renderBoard() {
+            document.querySelectorAll('.cell').forEach((cell, i) => {
+                cell.textContent = gameState[i];
+                cell.classList.toggle('taken', gameState[i] !== "");
+            });
+        }
+
+        function highlightWin(line) {
+            line.forEach(i => {
+                document.querySelector(`.cell[data-index="${i}"]`).classList.add('win');
+            });
+        }
+
+        function updateScoreDisplay() {
+            scoreXEl.textContent = scores.X;
+            scoreOEl.textContent = scores.O;
+            scoreDEl.textContent = scores.D;
+        }
+
+        function endGame(result) {
+            gameActive = false;
+            if (result.player === HUMAN) {
+                statusDisplay.textContent = `🎉 Você venceu!`;
+                scores.X++;
+            } else if (result.player === CPU) {
+                statusDisplay.textContent = `💻 O computador venceu!`;
+                scores.O++;
+            } else {
+                statusDisplay.textContent = `🤝 Empate!`;
+                scores.D++;
+            }
+            if (result.line.length) highlightWin(result.line);
+            updateScoreDisplay();
+        }
 
         function handleCellClick(e) {
             const clickedCell = e.target;
@@ -125,47 +311,45 @@
 
             if (gameState[clickedCellIndex] !== "" || !gameActive) return;
 
-            gameState[clickedCellIndex] = currentPlayer;
-            clickedCell.textContent = currentPlayer;
+            gameState[clickedCellIndex] = HUMAN;
+            renderBoard();
 
-            checkResultValidation();
-        }
+            const result = getWinner(gameState);
+            if (result) {
+                endGame(result);
+                return;
+            }
 
-        function checkResultValidation() {
-            let roundWon = false;
+            statusDisplay.textContent = `Vez do computador...`;
+            boardEl.classList.add('thinking');
 
-            for (let i = 0; i < winningConditions.length; i++) {
-                const [a, b, c] = winningConditions[i];
-                if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') continue;
-                if (gameState[a] === gameState[b] && gameState[b] === gameState[c]) {
-                    roundWon = true;
-                    break;
+            // Pequeno atraso para simular o computador "pensando".
+            setTimeout(() => {
+                const move = cpuChooseMove(gameState);
+                if (move !== undefined) {
+                    gameState[move] = CPU;
+                    renderBoard();
                 }
-            }
 
-            if (roundWon) {
-                statusDisplay.textContent = `🎉 O jogador ${currentPlayer} venceu!`;
-                gameActive = false;
-                return;
-            }
-
-            let roundDraw = !gameState.includes("");
-            if (roundDraw) {
-                statusDisplay.textContent = `🤝 Empate!`;
-                gameActive = false;
-                return;
-            }
-
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-            statusDisplay.textContent = `Vez do jogador: ${currentPlayer}`;
+                const result2 = getWinner(gameState);
+                boardEl.classList.remove('thinking');
+                if (result2) {
+                    endGame(result2);
+                } else {
+                    statusDisplay.textContent = `Vez do jogador: X`;
+                }
+            }, 400);
         }
 
         function restartGame() {
             gameActive = true;
-            currentPlayer = "X";
             gameState = ["", "", "", "", "", "", "", "", ""];
-            statusDisplay.textContent = `Vez do jogador: ${currentPlayer}`;
-            document.querySelectorAll('.cell').forEach(cell => cell.textContent = "");
+            statusDisplay.textContent = `Vez do jogador: X`;
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = "";
+                cell.classList.remove('taken', 'win');
+            });
+            boardEl.classList.remove('thinking');
         }
 
         document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', handleCellClick));
