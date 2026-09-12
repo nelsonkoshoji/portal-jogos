@@ -140,6 +140,13 @@
                 <option value="0.4">Médio</option>
                 <option value="0.15">Fácil</option>
             </select>
+
+            <label for="starter">Quem começa:</label>
+            <select id="starter">
+                <option value="alternar">Alternar a cada partida</option>
+                <option value="jogador">Sempre o jogador</option>
+                <option value="computador">Sempre o computador</option>
+            </select>
         </div>
 
         <div class="score">
@@ -163,9 +170,7 @@
         <div>
             <button id="restart">Reiniciar Jogo</button>
         </div>
-        <div>
-            <a href="../" class="voltar">⬅ Voltar ao Menu Principal</a>
-        </div>
+
     </div>
 
     <script>
@@ -173,6 +178,7 @@
         const statusDisplay = document.getElementById('status');
         const restartButton = document.getElementById('restart');
         const difficultySelect = document.getElementById('difficulty');
+        const starterSelect = document.getElementById('starter');
         const scoreXEl = document.getElementById('scoreX');
         const scoreOEl = document.getElementById('scoreO');
         const scoreDEl = document.getElementById('scoreD');
@@ -183,6 +189,8 @@
         let gameState = ["", "", "", "", "", "", "", "", ""];
         let gameActive = true;
         let scores = { X: 0, O: 0, D: 0 };
+        // Quem começa a próxima partida quando o modo "alternar" está ativo.
+        let nextStarter = HUMAN;
 
         const winningConditions = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
@@ -307,11 +315,13 @@
             updateScoreDisplay();
         }
 
+        let currentTurn = HUMAN;
+
         function handleCellClick(e) {
             const clickedCell = e.target;
             const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
 
-            if (gameState[clickedCellIndex] !== "" || !gameActive) return;
+            if (gameState[clickedCellIndex] !== "" || !gameActive || currentTurn !== HUMAN) return;
 
             gameState[clickedCellIndex] = HUMAN;
             renderBoard();
@@ -322,6 +332,11 @@
                 return;
             }
 
+            currentTurn = CPU;
+            playCpuTurn();
+        }
+
+        function playCpuTurn() {
             statusDisplay.textContent = `Vez do computador...`;
             boardEl.classList.add('thinking');
 
@@ -333,29 +348,49 @@
                     renderBoard();
                 }
 
-                const result2 = getWinner(gameState);
+                const result = getWinner(gameState);
                 boardEl.classList.remove('thinking');
-                if (result2) {
-                    endGame(result2);
+                if (result) {
+                    endGame(result);
                 } else {
+                    currentTurn = HUMAN;
                     statusDisplay.textContent = `Vez do jogador: X`;
                 }
             }, 400);
         }
 
+        function decideStarter() {
+            const mode = starterSelect.value;
+            if (mode === 'jogador') return HUMAN;
+            if (mode === 'computador') return CPU;
+            // "alternar": alterna entre jogador e computador a cada partida
+            const starter = nextStarter;
+            nextStarter = nextStarter === HUMAN ? CPU : HUMAN;
+            return starter;
+        }
+
         function restartGame() {
             gameActive = true;
             gameState = ["", "", "", "", "", "", "", "", ""];
-            statusDisplay.textContent = `Vez do jogador: X`;
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.textContent = "";
                 cell.classList.remove('taken', 'win');
             });
             boardEl.classList.remove('thinking');
+
+            currentTurn = decideStarter();
+
+            if (currentTurn === CPU) {
+                playCpuTurn();
+            } else {
+                statusDisplay.textContent = `Vez do jogador: X`;
+            }
         }
 
         document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', handleCellClick));
         restartButton.addEventListener('click', restartGame);
+        starterSelect.addEventListener('change', restartGame);
+        restartGame();
     </script>
 </body>
 </html>
