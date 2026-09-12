@@ -1,1 +1,460 @@
-oi forca
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Forca</title>
+<style>
+  :root{
+    --bg1:#1e1b4b;
+    --bg2:#312e81;
+    --accent:#f59e0b;
+    --accent2:#22d3ee;
+    --ok:#22c55e;
+    --err:#ef4444;
+    --panel:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Segoe UI', Roboto, Arial, sans-serif;
+    background:linear-gradient(135deg, var(--bg1), var(--bg2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .card{
+    background:var(--panel);
+    border-radius:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    padding:28px 30px 34px;
+    width:100%;
+    max-width:620px;
+    text-align:center;
+  }
+  h1{
+    margin:0 0 4px;
+    font-size:2rem;
+    color:var(--text);
+    letter-spacing:1px;
+  }
+  .subtitle{
+    color:var(--muted);
+    margin:0 0 18px;
+    font-size:0.95rem;
+  }
+  .setup{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    align-items:center;
+  }
+  .levels{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .level-btn{
+    border:2px solid #e5e7eb;
+    background:#f9fafb;
+    color:var(--text);
+    padding:12px 20px;
+    border-radius:14px;
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .level-btn:hover{ border-color:var(--accent2); transform:translateY(-2px); }
+  .level-btn.selected{
+    background:var(--accent2);
+    border-color:var(--accent2);
+    color:#08313a;
+  }
+  .start-btn{
+    margin-top:6px;
+    background:var(--accent);
+    color:#3b2400;
+    border:none;
+    padding:14px 34px;
+    font-size:1.1rem;
+    font-weight:700;
+    border-radius:14px;
+    cursor:pointer;
+    transition:transform 0.15s ease;
+  }
+  .start-btn:hover{ transform:translateY(-2px); }
+  .hangman-box{
+    margin:10px auto 14px;
+    width:220px;
+  }
+  #hangmanSvg{ width:100%; height:auto; }
+  .word-display{
+    font-size:2rem;
+    letter-spacing:10px;
+    font-weight:700;
+    color:var(--text);
+    margin:10px 0 6px;
+    word-break:break-all;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:0.9rem;
+    margin-bottom:10px;
+    min-height:1.2em;
+  }
+  .status-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:10px 0 18px;
+    font-size:0.95rem;
+    color:var(--muted);
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .badge{
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:999px;
+    background:#eef2ff;
+    color:#3730a3;
+    font-weight:600;
+  }
+  .lives{
+    font-weight:700;
+    color:var(--err);
+  }
+  .keyboard{
+    display:grid;
+    grid-template-columns:repeat(9, 1fr);
+    gap:6px;
+    margin:0 auto;
+    max-width:560px;
+  }
+  .key{
+    padding:10px 0;
+    border-radius:8px;
+    border:none;
+    background:#e5e7eb;
+    color:var(--text);
+    font-weight:700;
+    font-size:0.95rem;
+    cursor:pointer;
+    transition:transform 0.1s ease, background 0.15s ease;
+  }
+  .key:hover:not(:disabled){ transform:translateY(-2px); background:#d1d5db; }
+  .key:disabled{ cursor:default; opacity:0.55; }
+  .key.correct{ background:var(--ok); color:#fff; }
+  .key.wrong{ background:var(--err); color:#fff; }
+  .message{
+    margin-top:16px;
+    font-size:1.2rem;
+    font-weight:700;
+    min-height:1.6em;
+  }
+  .message.win{ color:var(--ok); }
+  .message.lose{ color:var(--err); }
+  .actions{
+    margin-top:14px;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .actions button{
+    padding:10px 20px;
+    border-radius:12px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.95rem;
+  }
+  .btn-secondary{ background:#e5e7eb; color:var(--text); }
+  .btn-secondary:hover{ background:#d1d5db; }
+  .btn-primary{ background:var(--accent2); color:#08313a; }
+  .btn-primary:hover{ filter:brightness(0.95); }
+  [hidden]{ display:none !important; }
+
+  @media (max-width:480px){
+    .word-display{ font-size:1.4rem; letter-spacing:6px; }
+    .keyboard{ grid-template-columns:repeat(7, 1fr); }
+    .key{ font-size:0.85rem; padding:8px 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎯 Jogo da Forca</h1>
+    <p class="subtitle">Adivinhe a palavra letra por letra antes que o boneco seja enforcado!</p>
+
+    <!-- TELA DE CONFIGURAÇÃO -->
+    <div class="setup" id="setupScreen">
+      <div>
+        <strong>Escolha a dificuldade:</strong>
+        <div class="levels" id="levelButtons">
+          <button class="level-btn" data-level="facil">Fácil</button>
+          <button class="level-btn" data-level="medio">Médio</button>
+          <button class="level-btn" data-level="dificil">Difícil</button>
+        </div>
+      </div>
+      <button class="start-btn" id="startBtn" disabled>Começar a jogar</button>
+    </div>
+
+    <!-- TELA DO JOGO -->
+    <div id="gameScreen" hidden>
+      <div class="hangman-box">
+        <svg id="hangmanSvg" viewBox="0 0 200 220">
+          <!-- base -->
+          <line x1="10" y1="210" x2="150" y2="210" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+          <line x1="40" y1="210" x2="40" y2="15" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+          <line x1="40" y1="15" x2="130" y2="15" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+          <line x1="130" y1="15" x2="130" y2="40" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+          <!-- parts, hidden by default -->
+          <circle id="part-head" cx="130" cy="60" r="20" stroke="#1f2937" stroke-width="5" fill="none" hidden/>
+          <line id="part-body" x1="130" y1="80" x2="130" y2="140" stroke="#1f2937" stroke-width="5" stroke-linecap="round" hidden/>
+          <line id="part-arm-l" x1="130" y1="95" x2="105" y2="120" stroke="#1f2937" stroke-width="5" stroke-linecap="round" hidden/>
+          <line id="part-arm-r" x1="130" y1="95" x2="155" y2="120" stroke="#1f2937" stroke-width="5" stroke-linecap="round" hidden/>
+          <line id="part-leg-l" x1="130" y1="140" x2="108" y2="175" stroke="#1f2937" stroke-width="5" stroke-linecap="round" hidden/>
+          <line id="part-leg-r" x1="130" y1="140" x2="152" y2="175" stroke="#1f2937" stroke-width="5" stroke-linecap="round" hidden/>
+        </svg>
+      </div>
+
+      <div class="status-row">
+        <span class="badge" id="levelBadge">Nível: Fácil</span>
+        <span class="lives" id="livesDisplay">❤️ 6 tentativas</span>
+      </div>
+
+      <div class="word-display" id="wordDisplay">_ _ _ _</div>
+      <div class="hint" id="hintDisplay"></div>
+
+      <div class="keyboard" id="keyboard"></div>
+
+      <div class="message" id="message"></div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="restartBtn">🔄 Trocar dificuldade</button>
+        <button class="btn-primary" id="newWordBtn">🎲 Nova palavra</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Banco de palavras por dificuldade (tema geral + tecnologia, para o público da ADS)
+  const WORD_BANKS = {
+    facil: [
+      {word:"CASA", hint:"Onde você mora"},
+      {word:"GATO", hint:"Animal de estimação que mia"},
+      {word:"LIVRO", hint:"Serve para ler"},
+      {word:"MOUSE", hint:"Periférico do computador"},
+      {word:"CHAVE", hint:"Usada para abrir portas"},
+      {word:"PRAIA", hint:"Lugar com areia e mar"},
+      {word:"ESCOLA", hint:"Onde se estuda"},
+      {word:"BANANA", hint:"Fruta amarela"},
+      {word:"TELA", hint:"Onde você vê a imagem do computador"},
+      {word:"AMIGO", hint:"Companheiro, colega próximo"}
+    ],
+    medio: [
+      {word:"TECLADO", hint:"Periférico usado para digitar"},
+      {word:"INTERNET", hint:"Rede mundial de computadores"},
+      {word:"ALGORITMO", hint:"Sequência de passos para resolver um problema"},
+      {word:"NAVEGADOR", hint:"Programa usado para acessar sites"},
+      {word:"IMPRESSORA", hint:"Equipamento que imprime documentos"},
+      {word:"SOFTWARE", hint:"Programa de computador"},
+      {word:"HARDWARE", hint:"Parte física do computador"},
+      {word:"BIBLIOTECA", hint:"Lugar com muitos livros"},
+      {word:"UNIVERSIDADE", hint:"Instituição de ensino superior"},
+      {word:"PROGRAMADOR", hint:"Profissional que escreve código"}
+    ],
+    dificil: [
+      {word:"CRIPTOGRAFIA", hint:"Técnica para proteger informações"},
+      {word:"ESCALONADOR", hint:"Componente do SO que decide a ordem dos processos"},
+      {word:"MICROPROCESSADOR", hint:"Chip que executa as instruções do computador"},
+      {word:"VIRTUALIZACAO", hint:"Técnica de criar máquinas virtuais"},
+      {word:"AUTENTICACAO", hint:"Processo de verificar identidade de um usuário"},
+      {word:"DESENVOLVEDOR", hint:"Profissional que constrói sistemas"},
+      {word:"CONECTIVIDADE", hint:"Capacidade de se conectar a redes"},
+      {word:"PROGRAMACAO", hint:"Atividade de criar códigos de software"},
+      {word:"CIBERSEGURANCA", hint:"Área que protege sistemas contra ataques"},
+      {word:"INTELIGENCIA", hint:"Parte da expressão 'Inteligência Artificial'"}
+    ]
+  };
+
+  const LIVES_BY_LEVEL = { facil: 8, medio: 6, dificil: 5 };
+  const LEVEL_LABELS = { facil: "Fácil", medio: "Médio", dificil: "Difícil" };
+  const HANGMAN_PARTS = ["part-head","part-body","part-arm-l","part-arm-r","part-leg-l","part-leg-r"];
+  const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  let currentLevel = null;
+  let currentWordObj = null;
+  let guessed = new Set();
+  let wrongCount = 0;
+  let maxLives = 6;
+  let gameOver = false;
+
+  const setupScreen = document.getElementById("setupScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  const levelButtons = document.querySelectorAll(".level-btn");
+  const startBtn = document.getElementById("startBtn");
+  const levelBadge = document.getElementById("levelBadge");
+  const livesDisplay = document.getElementById("livesDisplay");
+  const wordDisplay = document.getElementById("wordDisplay");
+  const hintDisplay = document.getElementById("hintDisplay");
+  const keyboardEl = document.getElementById("keyboard");
+  const messageEl = document.getElementById("message");
+  const restartBtn = document.getElementById("restartBtn");
+  const newWordBtn = document.getElementById("newWordBtn");
+
+  function normalize(str){
+    return str.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  levelButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      levelButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      currentLevel = btn.dataset.level;
+      startBtn.disabled = false;
+    });
+  });
+
+  startBtn.addEventListener("click", () => {
+    setupScreen.hidden = true;
+    gameScreen.hidden = false;
+    startNewGame();
+  });
+
+  restartBtn.addEventListener("click", () => {
+    gameScreen.hidden = true;
+    setupScreen.hidden = false;
+    levelButtons.forEach(b => b.classList.remove("selected"));
+    startBtn.disabled = true;
+    currentLevel = null;
+  });
+
+  newWordBtn.addEventListener("click", () => {
+    startNewGame();
+  });
+
+  function pickRandomWord(level){
+    const bank = WORD_BANKS[level];
+    return bank[Math.floor(Math.random() * bank.length)];
+  }
+
+  function startNewGame(){
+    currentWordObj = pickRandomWord(currentLevel);
+    guessed = new Set();
+    wrongCount = 0;
+    maxLives = LIVES_BY_LEVEL[currentLevel];
+    gameOver = false;
+
+    levelBadge.textContent = "Nível: " + LEVEL_LABELS[currentLevel];
+    hintDisplay.textContent = "💡 Dica: " + currentWordObj.hint;
+    messageEl.textContent = "";
+    messageEl.className = "message";
+
+    HANGMAN_PARTS.forEach(id => document.getElementById(id).hidden = true);
+
+    updateLivesDisplay();
+    renderWord();
+    renderKeyboard();
+  }
+
+  function renderWord(){
+    const normalizedWord = normalize(currentWordObj.word);
+    const display = normalizedWord.split("").map(ch => {
+      if (ch === " ") return " ";
+      return guessed.has(ch) ? ch : "_";
+    }).join(" ");
+    wordDisplay.textContent = display;
+  }
+
+  function updateLivesDisplay(){
+    const remaining = maxLives - wrongCount;
+    livesDisplay.textContent = "❤️ " + remaining + " tentativa" + (remaining === 1 ? "" : "s");
+  }
+
+  function renderKeyboard(){
+    keyboardEl.innerHTML = "";
+    ALPHABET.forEach(letter => {
+      const btn = document.createElement("button");
+      btn.className = "key";
+      btn.textContent = letter;
+      btn.addEventListener("click", () => handleGuess(letter, btn));
+      keyboardEl.appendChild(btn);
+    });
+  }
+
+  function handleGuess(letter, btnEl){
+    if (gameOver || guessed.has(letter)) return;
+
+    guessed.add(letter);
+    const normalizedWord = normalize(currentWordObj.word);
+
+    if (normalizedWord.includes(letter)) {
+      btnEl.classList.add("correct");
+      btnEl.disabled = true;
+    } else {
+      btnEl.classList.add("wrong");
+      btnEl.disabled = true;
+      wrongCount++;
+      revealHangmanPart(wrongCount);
+      updateLivesDisplay();
+    }
+
+    renderWord();
+    checkGameStatus();
+  }
+
+  function revealHangmanPart(step){
+    if (step >= 1 && step <= HANGMAN_PARTS.length) {
+      document.getElementById(HANGMAN_PARTS[step - 1]).hidden = false;
+    }
+  }
+
+  function checkGameStatus(){
+    const normalizedWord = normalize(currentWordObj.word);
+    const wordLetters = new Set(normalizedWord.split("").filter(ch => ch !== " "));
+    const won = [...wordLetters].every(ch => guessed.has(ch));
+
+    if (won) {
+      gameOver = true;
+      messageEl.textContent = "🎉 Parabéns! Você acertou a palavra!";
+      messageEl.className = "message win";
+      disableAllKeys();
+      return;
+    }
+
+    if (wrongCount >= maxLives) {
+      gameOver = true;
+      messageEl.textContent = "💀 Você perdeu! A palavra era: " + currentWordObj.word;
+      messageEl.className = "message lose";
+      // revela todas as partes do boneco
+      HANGMAN_PARTS.forEach(id => document.getElementById(id).hidden = false);
+      disableAllKeys();
+    }
+  }
+
+  function disableAllKeys(){
+    document.querySelectorAll(".key").forEach(k => k.disabled = true);
+  }
+
+  // suporte a teclado físico
+  document.addEventListener("keydown", (e) => {
+    if (gameScreen.hidden || gameOver) return;
+    const letter = e.key.toUpperCase();
+    if (ALPHABET.includes(letter)) {
+      const btn = [...keyboardEl.children].find(b => b.textContent === letter);
+      if (btn && !btn.disabled) handleGuess(letter, btn);
+    }
+  });
+})();
+</script>
+</body>
+</html>
