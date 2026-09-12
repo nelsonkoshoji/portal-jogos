@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Lançamento de Projétil — Fatec Campinas ADS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1a2b;
+    --bg-alt:#0e2338;
+    --grid:#16324d;
+    --cyan:#4ee1ff;
+    --cyan-dim:#2a7fa0;
+    --white:#eaf6ff;
+    --amber:#ffb64e;
+    --red:#ff6b6b;
+    --green:#4eff9f;
+    --panel:#0e2338;
+    --border:#1f4966;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--bg);
+    color:var(--white);
+    font-family:'JetBrains Mono', monospace;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px;
+  }
+  header{
+    width:100%;
+    max-width:900px;
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .brand{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:3px;
+    color:var(--cyan-dim);
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:clamp(20px, 4vw, 30px);
+    margin:0 0 4px;
+    color:var(--white);
+    letter-spacing:0.5px;
+  }
+  h1 span{color:var(--cyan);}
+  .subtitle{
+    font-size:12px;
+    color:#7fb4d1;
+  }
+  .wrap{
+    width:100%;
+    max-width:900px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:0 0 0 1px rgba(78,225,255,0.05), 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .statusbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:13px;
+    padding:8px 12px;
+    background:var(--bg-alt);
+    border:1px solid var(--border);
+    border-radius:8px;
+    margin-bottom:12px;
+  }
+  .stat{display:flex; flex-direction:column; align-items:center; gap:2px; min-width:70px;}
+  .stat .label{font-size:9px; letter-spacing:1.5px; color:#7fb4d1; text-transform:uppercase;}
+  .stat .value{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:16px; color:var(--cyan);}
+  .tries{display:flex; gap:5px;}
+  .try-dot{
+    width:12px; height:12px; border-radius:50%;
+    border:2px solid var(--cyan-dim);
+    background:transparent;
+  }
+  .try-dot.used{background:var(--red); border-color:var(--red);}
+  .try-dot.active{background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 6px var(--cyan);}
+
+  canvas{
+    width:100%;
+    display:block;
+    background:linear-gradient(180deg, #0d2440 0%, #0a1a2b 70%);
+    border:1px solid var(--border);
+    border-radius:8px;
+    touch-action:none;
+  }
+
+  .feedback{
+    min-height:22px;
+    text-align:center;
+    font-size:13px;
+    margin:10px 0 6px;
+    font-weight:600;
+  }
+  .feedback.hit{color:var(--green);}
+  .feedback.miss{color:var(--amber);}
+  .feedback.fail{color:var(--red);}
+  .feedback.info{color:#7fb4d1;}
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    align-items:flex-end;
+    justify-content:center;
+    margin-top:10px;
+  }
+  .control{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:200px;
+    flex:1 1 220px;
+  }
+  .control label{
+    font-size:11px;
+    letter-spacing:1px;
+    color:#7fb4d1;
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+  }
+  .control label b{color:var(--cyan); font-family:'Space Grotesk',sans-serif; font-size:14px;}
+  input[type=range]{
+    -webkit-appearance:none;
+    width:100%;
+    height:6px;
+    border-radius:3px;
+    background:var(--grid);
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--cyan);
+    cursor:pointer;
+    box-shadow:0 0 8px rgba(78,225,255,0.6);
+    border:2px solid #06111d;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--cyan);
+    cursor:pointer;
+    border:2px solid #06111d;
+  }
+  button{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.5px;
+    padding:12px 28px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(180deg, var(--cyan) 0%, #1fa8cc 100%);
+    color:#052033;
+    box-shadow:0 4px 14px rgba(78,225,255,0.35);
+    transition:transform 0.08s ease, opacity 0.15s ease;
+  }
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:0.35; cursor:not-allowed; box-shadow:none;}
+  button.secondary{
+    background:transparent;
+    color:var(--cyan);
+    border:1px solid var(--cyan-dim);
+    box-shadow:none;
+  }
+
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(6,17,29,0.88);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    z-index:10;
+  }
+  .overlay.show{display:flex;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:32px 28px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  }
+  .card h2{
+    font-family:'Space Grotesk', sans-serif;
+    color:var(--cyan);
+    margin-top:0;
+  }
+  .card .score{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:42px;
+    font-weight:700;
+    color:var(--white);
+    margin:10px 0;
+  }
+  .card .hits{color:#7fb4d1; font-size:13px; margin-bottom:20px;}
+  footer{
+    margin-top:14px;
+    font-size:10px;
+    color:var(--cyan-dim);
+    letter-spacing:1px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">FATEC CAMPINAS · ADS · PORTAS ABERTAS</div>
+  <h1>🎯 Simulador de Lançamento de <span>Projétil</span></h1>
+  <div class="subtitle">Ajuste o ângulo e a velocidade para acertar o alvo. Você tem 3 tentativas por rodada.</div>
+</header>
+
+<div class="wrap">
+  <div class="statusbar">
+    <div class="stat">
+      <div class="label">Rodada</div>
+      <div class="value" id="roundLabel">1/5</div>
+    </div>
+    <div class="stat">
+      <div class="label">Tentativas</div>
+      <div class="tries" id="triesBox"></div>
+    </div>
+    <div class="stat">
+      <div class="label">Pontuação</div>
+      <div class="value" id="scoreLabel">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Alvo</div>
+      <div class="value" id="targetLabel">-- m</div>
+    </div>
+  </div>
+
+  <canvas id="game" width="900" height="380"></canvas>
+
+  <div class="feedback info" id="feedback">Ajuste o ângulo e a velocidade e clique em Lançar.</div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Ângulo <b id="angleVal">45°</b></label>
+      <input type="range" id="angle" min="1" max="89" value="45" step="1">
+    </div>
+    <div class="control">
+      <label>Velocidade <b id="velVal">25 m/s</b></label>
+      <input type="range" id="velocity" min="5" max="40" value="25" step="1">
+    </div>
+    <button id="launchBtn">🚀 Lançar</button>
+  </div>
+</div>
+
+<footer>SIMULAB · nelsonkoshoji.com — desenvolvido para o Portas Abertas ADS</footer>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <h2>Fim de jogo!</h2>
+    <div class="score" id="finalScore">0</div>
+    <div class="hits" id="finalHits">Você acertou 0 de 5 alvos</div>
+    <button id="restartBtn">🔄 Jogar novamente</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const G = 9.8;
+
+  const TOTAL_ROUNDS = 5;
+  const MAX_TRIES = 3;
+  const TOLERANCE_M = 3.5; // meia-largura do alvo em metros
+  const WORLD_WIDTH_M = 100; // metros visíveis no canvas
+  const LAUNCH_MARGIN_M = 4; // posição do canhão a partir da borda esquerda
+
+  let round = 1;
+  let tries = MAX_TRIES;
+  let score = 0;
+  let hits = 0;
+  let targetDist = 0;
+  let roundOver = false;
+  let animating = false;
+  let pastTrails = []; // trajetórias das tentativas anteriores nesta rodada
+
+  const angleInput = document.getElementById('angle');
+  const velInput = document.getElementById('velocity');
+  const angleVal = document.getElementById('angleVal');
+  const velVal = document.getElementById('velVal');
+  const launchBtn = document.getElementById('launchBtn');
+  const feedback = document.getElementById('feedback');
+  const roundLabel = document.getElementById('roundLabel');
+  const scoreLabel = document.getElementById('scoreLabel');
+  const targetLabel = document.getElementById('targetLabel');
+  const triesBox = document.getElementById('triesBox');
+  const overlay = document.getElementById('overlay');
+  const finalScore = document.getElementById('finalScore');
+  const finalHits = document.getElementById('finalHits');
+  const restartBtn = document.getElementById('restartBtn');
+
+  function pxPerMeter(){ return canvas.width / WORLD_WIDTH_M; }
+  function groundY(){ return canvas.height - 40; }
+  function toPx(xm, ym){
+    const ppm = pxPerMeter();
+    return {
+      x: (LAUNCH_MARGIN_M + xm) * ppm,
+      y: groundY() - ym * ppm
+    };
+  }
+
+  function randomTargetDistance(){
+    // mantém uma margem segura dentro do mundo visível
+    const min = 20, max = WORLD_WIDTH_M - LAUNCH_MARGIN_M - 10;
+    return Math.round(min + Math.random() * (max - min));
+  }
+
+  function updateSliderLabels(){
+    angleVal.textContent = angleInput.value + '°';
+    velVal.textContent = velInput.value + ' m/s';
+  }
+  angleInput.addEventListener('input', updateSliderLabels);
+  velInput.addEventListener('input', updateSliderLabels);
+
+  function updateTriesUI(){
+    triesBox.innerHTML = '';
+    for(let i=0;i<MAX_TRIES;i++){
+      const dot = document.createElement('div');
+      dot.className = 'try-dot';
+      if(i < (MAX_TRIES - tries)) dot.classList.add('used');
+      else if(i === (MAX_TRIES - tries)) dot.classList.add('active');
+      triesBox.appendChild(dot);
+    }
+  }
+
+  function drawScene(trajPoints, launching){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const ppm = pxPerMeter();
+    const gy = groundY();
+
+    // grade de referência (a cada 10m)
+    ctx.strokeStyle = 'rgba(78,225,255,0.08)';
+    ctx.lineWidth = 1;
+    for(let m=0; m<=WORLD_WIDTH_M; m+=10){
+      const x = (LAUNCH_MARGIN_M + m) * ppm + toPx(0,0).x - toPx(0,0).x; // placeholder, recalculado abaixo
+    }
+    for(let m=-LAUNCH_MARGIN_M; m<=WORLD_WIDTH_M; m+=10){
+      const p = toPx(m,0);
+      ctx.beginPath();
+      ctx.moveTo(p.x, 10);
+      ctx.lineTo(p.x, gy);
+      ctx.stroke();
+    }
+
+    // chão
+    ctx.strokeStyle = '#2a7fa0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.lineTo(canvas.width, gy);
+    ctx.stroke();
+
+    // faixa de tolerância do alvo
+    const tOrigin = toPx(targetDist - TOLERANCE_M, 0);
+    const tEnd = toPx(targetDist + TOLERANCE_M, 0);
+    ctx.fillStyle = 'rgba(255,182,78,0.18)';
+    ctx.fillRect(tOrigin.x, gy-4, tEnd.x - tOrigin.x, 8);
+
+    // bandeira do alvo
+    const tp = toPx(targetDist, 0);
+    ctx.strokeStyle = '#ffb64e';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(tp.x, gy);
+    ctx.lineTo(tp.x, gy-46);
+    ctx.stroke();
+    ctx.fillStyle = '#ffb64e';
+    ctx.beginPath();
+    ctx.moveTo(tp.x, gy-46);
+    ctx.lineTo(tp.x+22, gy-38);
+    ctx.lineTo(tp.x, gy-30);
+    ctx.closePath();
+    ctx.fill();
+
+    // canhão
+    const cannonBase = toPx(0,0);
+    ctx.fillStyle = '#4ee1ff';
+    ctx.beginPath();
+    ctx.arc(cannonBase.x, cannonBase.y-6, 10, 0, Math.PI*2);
+    ctx.fill();
+
+    // trajetórias anteriores (desbotadas)
+    pastTrails.forEach(trail => {
+      ctx.strokeStyle = 'rgba(78,225,255,0.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      trail.forEach((pt,i) => {
+        const p = toPx(pt.x, pt.y);
+        if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+      });
+      ctx.stroke();
+    });
+
+    // trajetória atual
+    if(trajPoints && trajPoints.length){
+      ctx.strokeStyle = '#4ee1ff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      trajPoints.forEach((pt,i) => {
+        const p = toPx(pt.x, pt.y);
+        if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+      });
+      ctx.stroke();
+
+      // projétil na ponta
+      const last = trajPoints[trajPoints.length-1];
+      const lp = toPx(last.x, last.y);
+      ctx.fillStyle = '#eaf6ff';
+      ctx.beginPath();
+      ctx.arc(lp.x, lp.y, 6, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function computeTrajectory(angleDeg, v){
+    const rad = angleDeg * Math.PI/180;
+    const tFlight = (2*v*Math.sin(rad))/G;
+    const steps = 120;
+    const pts = [];
+    for(let i=0;i<=steps;i++){
+      const t = (tFlight*i)/steps;
+      const x = v*Math.cos(rad)*t;
+      const y = Math.max(0, v*Math.sin(rad)*t - 0.5*G*t*t);
+      pts.push({x,y,t});
+    }
+    const range = (v*v*Math.sin(2*rad))/G;
+    return {pts, range, tFlight};
+  }
+
+  function setFeedback(text, cls){
+    feedback.textContent = text;
+    feedback.className = 'feedback ' + cls;
+  }
+
+  function newRound(){
+    round++;
+    if(round > TOTAL_ROUNDS){ endGame(); return; }
+    startRoundState();
+  }
+
+  function startRoundState(){
+    tries = MAX_TRIES;
+    roundOver = false;
+    pastTrails = [];
+    targetDist = randomTargetDistance();
+    roundLabel.textContent = round + '/' + TOTAL_ROUNDS;
+    targetLabel.textContent = targetDist + ' m';
+    updateTriesUI();
+    setFeedback('Novo alvo a ' + targetDist + ' m. Ajuste e lance!', 'info');
+    launchBtn.disabled = false;
+    drawScene(null, false);
+  }
+
+  function endGame(){
+    overlay.classList.add('show');
+    finalScore.textContent = score;
+    finalHits.textContent = 'Você acertou ' + hits + ' de ' + TOTAL_ROUNDS + ' alvos';
+  }
+
+  function animateShot(angleDeg, v, onDone){
+    const {pts, range, tFlight} = computeTrajectory(angleDeg, v);
+    animating = true;
+    launchBtn.disabled = true;
+    const durationMs = 1400; // duração fixa de animação, independente da física
+    const start = performance.now();
+
+    function frame(now){
+      const elapsed = now - start;
+      const frac = Math.min(1, elapsed/durationMs);
+      const idx = Math.floor(frac * (pts.length-1));
+      const shown = pts.slice(0, idx+1);
+      drawScene(shown, true);
+      if(frac < 1){
+        requestAnimationFrame(frame);
+      } else {
+        drawScene(pts, false);
+        animating = false;
+        pastTrails.push(pts);
+        onDone(range);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function handleLaunch(){
+    if(animating || roundOver) return;
+    const angleDeg = parseFloat(angleInput.value);
+    const v = parseFloat(velInput.value);
+
+    animateShot(angleDeg, v, function(range){
+      const diff = range - targetDist;
+      const absDiff = Math.abs(diff);
+      const hit = absDiff <= TOLERANCE_M;
+      tries--;
+
+      if(hit){
+        const attemptUsed = MAX_TRIES - tries; // 1, 2 ou 3
+        const pts = attemptUsed===1 ? 100 : attemptUsed===2 ? 60 : 30;
+        score += pts;
+        hits++;
+        setFeedback('🎯 Acertou! Alcance: ' + range.toFixed(1) + ' m (+' + pts + ' pts)', 'hit');
+        scoreLabel.textContent = score;
+        roundOver = true;
+        updateTriesUI();
+        setTimeout(newRound, 1600);
+        return;
+      }
+
+      updateTriesUI();
+
+      if(tries > 0){
+        const dirTxt = diff < 0 ? 'Curto' : 'Longe';
+        setFeedback(dirTxt + '! Alcance: ' + range.toFixed(1) + ' m — faltam ' + absDiff.toFixed(1) + ' m. Tentativas restantes: ' + tries, 'miss');
+        launchBtn.disabled = false;
+      } else {
+        // acabaram as tentativas: revela uma combinação ideal de exemplo (45°)
+        const vIdeal = Math.sqrt(G * targetDist);
+        setFeedback('❌ Sem tentativas! Alcance: ' + range.toFixed(1) + ' m. Exemplo de combinação certa: 45° com ' + vIdeal.toFixed(1) + ' m/s.', 'fail');
+        roundOver = true;
+        setTimeout(newRound, 2600);
+      }
+    });
+  }
+
+  launchBtn.addEventListener('click', handleLaunch);
+  restartBtn.addEventListener('click', function(){
+    overlay.classList.remove('show');
+    round = 0;
+    score = 0;
+    hits = 0;
+    scoreLabel.textContent = 0;
+    newRound();
+  });
+
+  // resize canvas internal resolution to keep crispness on different widths
+  function fitCanvas(){
+    const displayWidth = canvas.clientWidth;
+    if(displayWidth && canvas.width !== Math.round(displayWidth)){
+      // mantém proporção 900x380 ~ 2.37:1
+      canvas.width = Math.round(displayWidth);
+      canvas.height = Math.round(displayWidth * (380/900));
+      drawScene(null,false);
+    }
+  }
+  window.addEventListener('resize', fitCanvas);
+
+  // init
+  updateSliderLabels();
+  round = 0;
+  newRound();
+  requestAnimationFrame(fitCanvas);
+})();
+</script>
+
+</body>
+</html>
