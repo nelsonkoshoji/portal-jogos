@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adivinhe o Número</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        padding: 20px;
+    }
+
+    .container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+    }
+
+    h1 {
+        color: #1e3c72;
+        margin-bottom: 8px;
+        font-size: 1.8rem;
+    }
+
+    p.subtitulo {
+        color: #555;
+        margin-bottom: 24px;
+        font-size: 0.95rem;
+    }
+
+    .campo {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+        flex: 1;
+        padding: 12px;
+        font-size: 1.1rem;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        outline: none;
+        text-align: center;
+    }
+
+    input[type="number"]:focus {
+        border-color: #2a5298;
+    }
+
+    button {
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #fff;
+        background: #2a5298;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    button:hover {
+        background: #1e3c72;
+    }
+
+    button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+    }
+
+    #mensagem {
+        min-height: 60px;
+        font-size: 1.15rem;
+        font-weight: bold;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        padding: 10px;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .dica-maior {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+    .dica-menor {
+        background: #cfe2ff;
+        color: #084298;
+    }
+
+    .acerto {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .neutro {
+        background: #f1f1f1;
+        color: #444;
+    }
+
+    .info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    #btnReiniciar {
+        background: #6c757d;
+        margin-top: 10px;
+        width: 100%;
+        display: none;
+    }
+
+    #btnReiniciar:hover {
+        background: #565e64;
+    }
+
+    .rodape {
+        margin-top: 24px;
+        font-size: 0.75rem;
+        color: #999;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Adivinhe o Número</h1>
+    <p class="subtitulo">Estou pensando em um número entre <strong>1</strong> e <strong>100</strong>. Tente acertar!</p>
+
+    <div class="info">
+        <span>Tentativas: <strong id="tentativas">0</strong></span>
+        <span>Faixa atual: <strong id="faixa">1 - 100</strong></span>
+    </div>
+
+    <div class="campo">
+        <input type="number" id="palpite" min="1" max="100" placeholder="Digite um número">
+        <button id="btnTentar">Tentar</button>
+    </div>
+
+    <div id="mensagem" class="neutro">Boa sorte! Digite um número para começar.</div>
+
+    <button id="btnReiniciar">🔄 Jogar novamente</button>
+
+    <p class="rodape">Exemplo didático de estrutura de repetição (laço) — cada tentativa é uma iteração do laço até a condição de parada ser atingida.</p>
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // Lógica do jogo "Adivinhe o Número"
+    // Ideia central: o jogo roda em um LAÇO (loop) que se repete
+    // a cada tentativa do usuário, até que a condição de parada
+    // (acertar o número) seja satisfeita.
+    // ---------------------------------------------------------
+
+    let numeroSecreto;
+    let tentativas;
+    let minAtual;
+    let maxAtual;
+    let jogoAtivo;
+
+    const inputPalpite = document.getElementById("palpite");
+    const btnTentar = document.getElementById("btnTentar");
+    const btnReiniciar = document.getElementById("btnReiniciar");
+    const mensagem = document.getElementById("mensagem");
+    const spanTentativas = document.getElementById("tentativas");
+    const spanFaixa = document.getElementById("faixa");
+
+    function iniciarJogo() {
+        numeroSecreto = Math.floor(Math.random() * 100) + 1; // sorteia de 1 a 100
+        tentativas = 0;
+        minAtual = 1;
+        maxAtual = 100;
+        jogoAtivo = true;
+
+        spanTentativas.textContent = tentativas;
+        spanFaixa.textContent = `${minAtual} - ${maxAtual}`;
+
+        mensagem.textContent = "Boa sorte! Digite um número para começar.";
+        mensagem.className = "neutro";
+
+        inputPalpite.value = "";
+        inputPalpite.disabled = false;
+        inputPalpite.min = minAtual;
+        inputPalpite.max = maxAtual;
+        btnTentar.disabled = false;
+        btnReiniciar.style.display = "none";
+
+        inputPalpite.focus();
+    }
+
+    function tentar() {
+        // Esta função representa UMA iteração do laço de jogo.
+        // O "laço" em si é a repetição de cliques/chamadas até
+        // que jogoAtivo se torne falso (condição de parada).
+        if (!jogoAtivo) return;
+
+        const valor = inputPalpite.value.trim();
+
+        if (valor === "") {
+            mensagem.textContent = "Digite um número antes de tentar!";
+            mensagem.className = "neutro";
+            return;
+        }
+
+        const palpite = parseInt(valor, 10);
+
+        if (isNaN(palpite) || palpite < 1 || palpite > 100) {
+            mensagem.textContent = "Digite um número válido entre 1 e 100.";
+            mensagem.className = "neutro";
+            return;
+        }
+
+        tentativas++;
+        spanTentativas.textContent = tentativas;
+
+        if (palpite === numeroSecreto) {
+            mensagem.textContent = `🎉 Parabéns! Você acertou em ${tentativas} tentativa(s)!`;
+            mensagem.className = "acerto";
+            encerrarJogo();
+            return;
+        }
+
+        if (palpite < numeroSecreto) {
+            minAtual = Math.max(minAtual, palpite + 1);
+            mensagem.textContent = `⬆️ Maior que ${palpite}! Tente um número mais alto.`;
+            mensagem.className = "dica-maior";
+        } else {
+            maxAtual = Math.min(maxAtual, palpite - 1);
+            mensagem.textContent = `⬇️ Menor que ${palpite}! Tente um número mais baixo.`;
+            mensagem.className = "dica-menor";
+        }
+
+        spanFaixa.textContent = `${minAtual} - ${maxAtual}`;
+        inputPalpite.value = "";
+        inputPalpite.focus();
+    }
+
+    function encerrarJogo() {
+        jogoAtivo = false;
+        inputPalpite.disabled = true;
+        btnTentar.disabled = true;
+        btnReiniciar.style.display = "block";
+    }
+
+    btnTentar.addEventListener("click", tentar);
+
+    inputPalpite.addEventListener("keydown", function (evento) {
+        if (evento.key === "Enter") {
+            tentar();
+        }
+    });
+
+    btnReiniciar.addEventListener("click", iniciarJogo);
+
+    // Inicia o jogo ao carregar a página
+    iniciarJogo();
+</script>
+
+</body>
+</html>
