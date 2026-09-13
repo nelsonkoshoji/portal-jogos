@@ -15,9 +15,31 @@
     body {
         min-height: 100vh;
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        padding: 0;
+    }
+
+    .cabecalho {
+        width: 100%;
+        text-align: center;
+        padding: 22px 16px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #ffffff;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        letter-spacing: 0.3px;
+    }
+
+    .conteudo {
+        flex: 1;
+        display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        width: 100%;
         padding: 20px;
     }
 
@@ -136,15 +158,37 @@
         background: #565e64;
     }
 
-    .rodape {
+    .rodape-dica {
         margin-top: 24px;
         font-size: 0.75rem;
         color: #999;
+    }
+
+    .rodape {
+        width: 100%;
+        text-align: center;
+        padding: 20px 16px 26px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #eef2f9;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .rodape strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1rem;
+        color: #ffffff;
     }
 </style>
 </head>
 <body>
 
+<header class="cabecalho">
+    Bem vindos ao Portas Abertas da Fatec Campinas
+</header>
+
+<div class="conteudo">
 <div class="container">
     <h1>🎯 Adivinhe o Número</h1>
     <p class="subtitulo">Estou pensando em um número entre <strong>1</strong> e <strong>100</strong>. Tente acertar!</p>
@@ -163,8 +207,14 @@
 
     <button id="btnReiniciar">🔄 Jogar novamente</button>
 
-    <p class="rodape">Exemplo didático de estrutura de repetição (laço) — cada tentativa é uma iteração do laço até a condição de parada ser atingida.</p>
+    <p class="rodape-dica">Exemplo didático de estrutura de repetição (laço) — cada tentativa é uma iteração do laço até a condição de parada ser atingida.</p>
 </div>
+</div>
+
+<footer class="rodape">
+    <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+    Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+</footer>
 
 <script>
     // ---------------------------------------------------------
