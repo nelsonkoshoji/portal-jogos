@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Órbitas: Terra, Sol e Lua</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f3ef;
+    color: #1a1a19;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header.site-header {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .page-body {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e0d9;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    margin: 0 0 18px;
+    line-height: 1.5;
+  }
+  #scenario-box {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  #scenario-box .item .label { font-size: 11px; color: #6b6a65; margin-bottom: 2px; }
+  #scenario-box .item .value { font-size: 15px; font-weight: 600; color: #52514e; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #plot-btn { background: #378ADD; color: #fff; }
+  #plot-btn:hover { background: #185fa5; }
+  #reset-btn { background: #eceae2; color: #1a1a19; }
+  #reset-btn:hover { background: #d3d1c7; }
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: #52514e;
+    margin-bottom: 8px;
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  #live-info {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    min-height: 18px;
+    margin-bottom: 8px;
+  }
+  #cycles-box {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  #cycles-box .item {
+    background: #12192b;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  #cycles-box .label { font-size: 11px; color: #9aa5b1; margin-bottom: 2px; }
+  #cycles-box .value { font-size: 20px; font-weight: 600; }
+  #cycles-box .earth .value { color: #3f8cd6; }
+  #cycles-box .moon .value { color: #F0A64B; }
+  #plot-wrap {
+    width: 100%;
+    background: #060a14;
+    border: 1px solid #e1e0d9;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  #result-box {
+    display: none;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #3d3d3a;
+    line-height: 1.6;
+  }
+  #result-box div { margin-bottom: 4px; }
+  #result-box div:last-child { margin-bottom: 0; }
+  footer.site-footer {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+<div class="page-body">
+<div class="card">
+  <h1>Órbitas: Terra, Sol e Lua</h1>
+  <p class="subtitle">Dois anos de órbita da Terra ao redor do Sol, com a Lua acompanhando bem mais devagar. Embaixo, um único gráfico: a distância Terra–Sol, com a fase da Lua sobreposta como uma ondulação fina.</p>
+
+  <div id="scenario-box">
+    <div class="item">
+      <div class="label">Período da Terra</div>
+      <div class="value">365 dias</div>
+    </div>
+    <div class="item">
+      <div class="label">Período da Lua</div>
+      <div class="value">27,3 dias</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="plot-btn">▶ Iniciar simulação (2 anos)</button>
+    <button id="reset-btn">↻ Repetir</button>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#F0C93B;"></i>Sol</span>
+    <span><i style="background:#3f8cd6;"></i>Terra (distância ao Sol)</span>
+    <span><i style="background:#F0A64B;"></i>Lua (fase, tracejado, amplitude menor)</span>
+  </div>
+
+  <div id="cycles-box">
+    <div class="item earth">
+      <div class="label">Ciclos da Terra (anos)</div>
+      <div class="value" id="cycles-earth">0,00</div>
+    </div>
+    <div class="item moon">
+      <div class="label">Ciclos da Lua (meses)</div>
+      <div class="value" id="cycles-moon">0,00</div>
+    </div>
+  </div>
+
+  <div id="live-info"></div>
+
+  <div id="plot-wrap">
+    <svg id="plot" viewBox="0 0 340 480" role="img">
+      <title>Terra orbitando o Sol por dois anos com a Lua acompanhando mais devagar, e um único gráfico combinando a distância Terra-Sol com a ondulação da fase lunar</title>
+    </svg>
+  </div>
+
+  <div id="result-box"></div>
+
+</div>
+</div>
+
+<footer class="site-footer">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística</footer>
+
+<script>
+(function(){
+  var plotBtn = document.getElementById('plot-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var liveInfo = document.getElementById('live-info');
+  var cyclesEarthEl = document.getElementById('cycles-earth');
+  var cyclesMoonEl = document.getElementById('cycles-moon');
+  var svg = document.getElementById('plot');
+  var resultBox = document.getElementById('result-box');
+
+  var PI = Math.PI;
+  var TYEAR = 365, TSID = 27.3;
+  var NCYCLES = 2;
+  var TEND = TYEAR * NCYCLES;
+  var A = 95, ECC = 0.15;
+  var RM = 6;
+  var KM_PER_PX = 150 / A;
+  var animating = false;
+
+  var W = 340, H = 480;
+  var cx = 170, cy = 140;
+  var orbitBottom = 280;
+  var chartTop = 305, chartBottom = 455;
+  var ML = 42, MR = 15;
+  var PW = W - ML - MR;
+  var N = 500;
+
+  function fmt(n){
+    var r = Math.round(n * 10) / 10;
+    return r.toFixed(1).replace('.', ',');
+  }
+  function fmt0(n){ return Math.round(n).toString(); }
+
+  function radiusAt(theta){ return A * (1 - ECC*ECC) / (1 + ECC * Math.cos(theta)); }
+
+  function earthPos(t){
+    var th = 2*PI*t/TYEAR;
+    var r = radiusAt(th);
+    return { x: cx + r*Math.cos(th), y: cy + r*Math.sin(th), th: th, r: r };
+  }
+  function moonPos(t, ep){
+    var thm = 2*PI*t/TSID;
+    return { x: ep.x + RM*Math.cos(thm), y: ep.y + RM*Math.sin(thm), th: thm };
+  }
+  function illuminatedFraction(ep, mp){
+    var sunDir = ep.th + PI;
+    var elong = mp.th - sunDir;
+    elong = ((elong % (2*PI)) + 2*PI) % (2*PI);
+    return (1 - Math.cos(elong)) / 2;
+  }
+
+  function clearSvg(){
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
+    t.textContent = 'Terra orbitando o Sol por dois anos com a Lua acompanhando mais devagar, e um único gráfico combinando a distância Terra-Sol com a ondulação da fase lunar';
+    svg.appendChild(t);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function pxChart(t){ return ML + (t / TEND) * PW; }
+
+  function runPlot(){
+    if(animating) return;
+    animating = true;
+    resultBox.style.display = 'none';
+    liveInfo.textContent = '';
+    cyclesEarthEl.textContent = '0,00';
+    cyclesMoonEl.textContent = '0,00';
+    clearSvg();
+
+    for(var s=0;s<35;s++){
+      var sx = Math.random()*W, sy = Math.random()*orbitBottom;
+      svg.appendChild(svgEl('circle', {cx:sx, cy:sy, r: Math.random()*0.8+0.3, fill:'#ffffff', opacity:(0.25+Math.random()*0.5).toString()}));
+    }
+
+    var defs = svgEl('defs', {});
+    var chartClip = svgEl('clipPath', {id:'combinedClip'});
+    var chartClipRect = svgEl('rect', {x:pxChart(0), y:chartTop, width:0, height:chartBottom-chartTop});
+    chartClip.appendChild(chartClipRect);
+    defs.appendChild(chartClip);
+    svg.appendChild(defs);
+
+    // Reference orbit path (elliptical, Sun at focus)
+    var orbitPts = [];
+    for(var oi=0; oi<=120; oi++){
+      var oth = 2*PI*oi/120;
+      var or_ = radiusAt(oth);
+      orbitPts.push((cx+or_*Math.cos(oth)).toFixed(1)+','+(cy+or_*Math.sin(oth)).toFixed(1));
+    }
+    svg.appendChild(svgEl('polygon', {points:orbitPts.join(' '), fill:'none', stroke:'#3f8cd6', 'stroke-width':1, 'stroke-dasharray':'3,4', opacity:'0.5'}));
+    svg.appendChild(svgEl('circle', {cx:cx, cy:cy, r:11, fill:'#F0C93B'}));
+
+    var trail = svgEl('polyline', {points:'', fill:'none', stroke:'#c9c9c9', 'stroke-width':1.1, opacity:'0.85'});
+    svg.appendChild(trail);
+
+    var earthDot = svgEl('circle', {r:6, fill:'#3f8cd6', cx:cx+A*(1-ECC), cy:cy});
+    var moonDot = svgEl('circle', {r:3, fill:'#e6e6e6', cx:cx+A*(1-ECC)+RM, cy:cy});
+    svg.appendChild(earthDot);
+    svg.appendChild(moonDot);
+
+    // --- Combined chart: Earth-Sun distance + Moon phase ripple, same axes ---
+    var rMin = A*(1-ECC), rMax = A*(1+ECC);
+    var distMin = rMin*KM_PER_PX, distMax = rMax*KM_PER_PX;
+    var distPad = (distMax-distMin)*0.35;
+    var dLo = distMin-distPad, dHi = distMax+distPad;
+    function py(v){ return chartBottom - (v-dLo)/(dHi-dLo) * (chartBottom-chartTop); }
+
+    var axesG = svgEl('g', {});
+    axesG.appendChild(svgEl('line', {x1:ML, y1:chartBottom, x2:ML+PW, y2:chartBottom, stroke:'#4a5568', 'stroke-width':1}));
+    axesG.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#4a5568', 'stroke-width':1}));
+    [0, TYEAR, TEND].forEach(function(v){
+      var lbl = svgEl('text', {x:pxChart(v), y:chartBottom+14, 'text-anchor':'middle', 'font-size':'9', fill:'#9aa5b1'});
+      lbl.textContent = 'dia ' + fmt0(v);
+      axesG.appendChild(lbl);
+    });
+    [ [distMin,'perihélio'], [distMax,'afélio'] ].forEach(function(pair){
+      var v = pair[0], name = pair[1];
+      var y = py(v);
+      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'9', fill:'#9aa5b1'});
+      lbl.textContent = fmt0(v) + 'M km';
+      axesG.appendChild(lbl);
+      var lbl2 = svgEl('text', {x:ML-6, y:y-8, 'text-anchor':'end', 'font-size':'8', fill:'#6f7883'});
+      lbl2.textContent = '(' + name + ')';
+      axesG.appendChild(lbl2);
+    });
+    var chartTitle = svgEl('text', {x:ML, y:chartTop-6, 'font-size':'10', fill:'#c9c9c9'});
+    chartTitle.textContent = 'Eixo Y: distância Terra–Sol (milhões de km) · fase da Lua sobreposta';
+    axesG.appendChild(chartTitle);
+    svg.appendChild(axesG);
+
+    // Tick mark for every completed lunar (synodic) cycle
+    var synodicMonth = 1 / (1/TSID - 1/TYEAR);
+    var tickG = svgEl('g', {});
+    for(var mIdx=1; mIdx*synodicMonth <= TEND; mIdx++){
+      var tx = pxChart(mIdx*synodicMonth);
+      tickG.appendChild(svgEl('line', {x1:tx, y1:chartBottom, x2:tx, y2:chartBottom+5, stroke:'#F0A64B', 'stroke-width':1}));
+    }
+    svg.appendChild(tickG);
+
+    var rippleAmp = (dHi-dLo) * 0.05;
+    var baseline = (distMin+distMax)/2;
+
+    var ptsDist = [], ptsMoon = [];
+    for(var i=0;i<=N;i++){
+      var t = TEND * i / N;
+      var ep = earthPos(t);
+      ptsDist.push([t, ep.r*KM_PER_PX]);
+      var mp = moonPos(t, ep);
+      var frac = illuminatedFraction(ep, mp);
+      ptsMoon.push([t, baseline + (frac-0.5)*2*rippleAmp]);
+    }
+    function pathFromPts(pts){
+      var s = 'M ' + pxChart(pts[0][0]) + ' ' + py(pts[0][1]);
+      for(var j=1;j<pts.length;j++){ s += ' L ' + pxChart(pts[j][0]) + ' ' + py(pts[j][1]); }
+      return s;
+    }
+
+    var chartGroup = svgEl('g', {'clip-path':'url(#combinedClip)'});
+    svg.appendChild(chartGroup);
+    var pathMoon = svgEl('path', {d: pathFromPts(ptsMoon), fill:'none', stroke:'#F0A64B', 'stroke-width':1.1, 'stroke-dasharray':'4,3', opacity:'0.9'});
+    var pathDist = svgEl('path', {d: pathFromPts(ptsDist), fill:'none', stroke:'#3f8cd6', 'stroke-width':2.2, 'stroke-linecap':'round'});
+    chartGroup.appendChild(pathMoon);
+    chartGroup.appendChild(pathDist);
+
+    var trailPts = [];
+    var duration = 27000;
+    var start = null;
+
+    function step(ts){
+      if(!start) start = ts;
+      var elapsed = ts - start;
+      var frac = Math.min(elapsed / duration, 1);
+      var curDay = frac * TEND;
+
+      var ep = earthPos(curDay);
+      var mp = moonPos(curDay, ep);
+      earthDot.setAttribute('cx', ep.x);
+      earthDot.setAttribute('cy', ep.y);
+      moonDot.setAttribute('cx', mp.x);
+      moonDot.setAttribute('cy', mp.y);
+
+      trailPts.push(mp.x.toFixed(1)+','+mp.y.toFixed(1));
+      if(trailPts.length > 1600){ trailPts.shift(); }
+      trail.setAttribute('points', trailPts.join(' '));
+
+      var revealW = Math.max(0, pxChart(curDay) - pxChart(0));
+      chartClipRect.setAttribute('width', revealW);
+
+      var frac_ill = illuminatedFraction(ep, mp);
+      var loops = curDay / TSID;
+      var years = curDay / TYEAR;
+      var moonCyclesSynodic = curDay / synodicMonth;
+      cyclesEarthEl.textContent = fmt(years);
+      cyclesMoonEl.textContent = fmt(moonCyclesSynodic);
+      liveInfo.textContent = 'Dia ' + fmt0(curDay) + ' de ' + fmt0(TEND) + ' (ano ' + fmt(years) + ')   distância: ' + fmt0(ep.r*KM_PER_PX) + ' milhões km   Lua iluminada: ' + fmt0(frac_ill*100) + '%';
+
+      if(frac < 1){
+        requestAnimationFrame(step);
+      } else {
+        finishPlot();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finishPlot(){
+    animating = false;
+    liveInfo.textContent = '';
+
+    var loopsTotal = TEND / TSID;
+    var synodic = 1 / (1/TSID - 1/TYEAR);
+    var synodicCyclesFinal = TEND / synodic;
+    var rMin = A*(1-ECC)*KM_PER_PX, rMax = A*(1+ECC)*KM_PER_PX;
+
+    var infoLines = [];
+    infoLines.push('Em ' + NCYCLES + ' ano(s) solar(es) (' + fmt0(TEND) + ' dias), a Lua completa aproximadamente ' + fmt(synodicCyclesFinal) + ' ciclos de fase (mês sinódico, ≈ ' + fmt(synodic) + ' dias cada) — são as marcações laranja no eixo do gráfico.');
+    infoLines.push('Contando voltas reais ao redor da Terra (período sideral, 27,3 dias) em vez de fases, seriam ' + fmt(loopsTotal) + ' voltas — um número um pouco maior, porque a Terra também está se movendo.');
+    infoLines.push('O eixo Y do gráfico é a distância Terra–Sol, em milhões de km. Ela varia porque a órbita é elíptica (Lei de Kepler): mais perto no periélio (' + fmt0(rMin) + 'M km), mais longe no afélio (' + fmt0(rMax) + 'M km).');
+    infoLines.push('Na realidade, a órbita da Terra é bem menos achatada que essa: o periélio real é ≈147,1 milhões de km e o afélio ≈152,1 milhões de km — só 3,3% de diferença. Usei uma excentricidade exagerada (0,15 em vez de 0,017) só para essa variação ficar visível no gráfico.');
+    infoLines.push('A curva laranja (fina e tracejada) é a fase da Lua, com amplitude e velocidade reduzidas para não dominar o gráfico.');
+
+    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
+    resultBox.style.display = 'block';
+  }
+
+  plotBtn.addEventListener('click', runPlot);
+
+  resetBtn.addEventListener('click', function(){
+    animating = false;
+    liveInfo.textContent = '';
+    resultBox.style.display = 'none';
+    clearSvg();
+  });
+})();
+</script>
+</body>
+</html>

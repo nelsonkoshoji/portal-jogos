@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lançamento de Projéteis</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f3ef;
+    color: #1a1a19;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header.site-header {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .page-body {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e0d9;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    margin: 0 0 18px;
+    line-height: 1.5;
+  }
+  #eq-label {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 18px;
+    color: #185fa5;
+  }
+  .field { margin-bottom: 18px; }
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #52514e;
+    margin-bottom: 6px;
+  }
+  .field-row span:last-child { font-weight: 600; color: #1a1a19; }
+  input[type="range"] { width: 100%; }
+  #v0-slider { accent-color: #378ADD; }
+  #angle-slider { accent-color: #D85A30; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #plot-btn { background: #378ADD; color: #fff; }
+  #plot-btn:hover { background: #185fa5; }
+  #reset-btn { background: #eceae2; color: #1a1a19; }
+  #reset-btn:hover { background: #d3d1c7; }
+  #live-info {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    min-height: 18px;
+    margin-bottom: 8px;
+  }
+  #plot-wrap {
+    width: 100%;
+    background: #eaf3fb;
+    border: 1px solid #e1e0d9;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  #result-box {
+    display: none;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #3d3d3a;
+    line-height: 1.6;
+  }
+  #result-box div { margin-bottom: 4px; }
+  #result-box div:last-child { margin-bottom: 0; }
+  footer.site-footer {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+<div class="page-body">
+<div class="card">
+  <h1>Lançamento de projéteis</h1>
+  <p class="subtitle">Escolha o ângulo e a velocidade inicial e veja a trajetória, a altura máxima e o alcance do projétil, desenhados bem devagar.</p>
+
+  <div id="eq-label">v₀ = 30 m/s   θ = 45°</div>
+
+  <div class="field">
+    <div class="field-row">
+      <span>Velocidade inicial (v₀)</span>
+      <span id="v0-out">30 m/s</span>
+    </div>
+    <input type="range" id="v0-slider" min="5" max="80" step="1" value="30" />
+  </div>
+
+  <div class="field">
+    <div class="field-row">
+      <span>Ângulo de lançamento (θ)</span>
+      <span id="angle-out">45°</span>
+    </div>
+    <input type="range" id="angle-slider" min="1" max="89" step="1" value="45" />
+  </div>
+
+  <div class="actions">
+    <button id="plot-btn">▶ Lançar projétil</button>
+    <button id="reset-btn">↻ Novo lançamento</button>
+  </div>
+
+  <div id="live-info"></div>
+
+  <div id="plot-wrap">
+    <svg id="plot" viewBox="0 0 340 320" role="img">
+      <title>Trajetória de um projétil lançado com ângulo e velocidade ajustáveis</title>
+    </svg>
+  </div>
+
+  <div id="result-box"></div>
+
+</div>
+</div>
+
+<footer class="site-footer">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística</footer>
+
+<script>
+(function(){
+  var v0Slider = document.getElementById('v0-slider');
+  var angleSlider = document.getElementById('angle-slider');
+  var v0Out = document.getElementById('v0-out');
+  var angleOut = document.getElementById('angle-out');
+  var eqLabel = document.getElementById('eq-label');
+  var plotBtn = document.getElementById('plot-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var liveInfo = document.getElementById('live-info');
+  var svg = document.getElementById('plot');
+  var resultBox = document.getElementById('result-box');
+
+  var G = 9.8;
+  var state = { v0: 30, angleDeg: 45, animating: false };
+
+  var W = 340, H = 320, ML = 40, MR = 15, MT = 20, MB = 30;
+  var PW = W - ML - MR, PH = H - MT - MB;
+  var N = 150;
+
+  function fmt(n){
+    var r = Math.round(n * 100) / 100;
+    return (Object.is(r, -0) ? 0 : r).toString();
+  }
+
+  function updateEq(){
+    eqLabel.textContent = 'v\u2080 = ' + fmt(state.v0) + ' m/s   \u03b8 = ' + fmt(state.angleDeg) + '\u00B0';
+  }
+
+  v0Slider.addEventListener('input', function(){ state.v0 = parseFloat(v0Slider.value); v0Out.textContent = fmt(state.v0) + ' m/s'; updateEq(); });
+  angleSlider.addEventListener('input', function(){ state.angleDeg = parseFloat(angleSlider.value); angleOut.textContent = fmt(state.angleDeg) + '\u00B0'; updateEq(); });
+
+  function clearSvg(){
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
+    t.textContent = 'Trajetória de um projétil lançado com ângulo e velocidade ajustáveis';
+    svg.appendChild(t);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function runPlot(){
+    if(state.animating) return;
+    state.animating = true;
+    resultBox.style.display = 'none';
+    liveInfo.textContent = '';
+    clearSvg();
+
+    var v0 = state.v0, theta = state.angleDeg * Math.PI / 180;
+    var vx = v0 * Math.cos(theta);
+    var vy = v0 * Math.sin(theta);
+    var T = 2 * vy / G;
+    var R = vx * T;
+    var H = (vy*vy) / (2*G);
+
+    function xAt(t){ return vx * t; }
+    function yAt(t){ return Math.max(0, vy*t - 0.5*G*t*t); }
+
+    var xmax = R * 1.05;
+    var ymax = H * 1.2;
+    if(ymax < xmax * 0.15){ ymax = xmax * 0.15; }
+
+    function px(x){ return ML + (x / xmax) * PW; }
+    function py(y){ return MT + PH - (y / ymax) * PH; }
+
+    var g1 = svgEl('g', {});
+    var groundY = py(0);
+    g1.appendChild(svgEl('line', {x1:ML, y1:groundY, x2:ML+PW, y2:groundY, stroke:'#8a8a86', 'stroke-width':2}));
+    g1.appendChild(svgEl('line', {x1:ML, y1:MT, x2:ML, y2:groundY, stroke:'#b4b2a9', 'stroke-width':1}));
+    [0, R].forEach(function(v){
+      var lbl = svgEl('text', {x:px(v), y:groundY+16, 'text-anchor':'middle', 'font-size':'10', fill:'#6b6a65'});
+      lbl.textContent = fmt(v) + ' m';
+      g1.appendChild(lbl);
+    });
+    var hLbl = svgEl('text', {x:ML-6, y:py(H)+3, 'text-anchor':'end', 'font-size':'10', fill:'#6b6a65'});
+    hLbl.textContent = fmt(H) + ' m';
+    g1.appendChild(hLbl);
+    svg.appendChild(g1);
+
+    var hLine = svgEl('line', {x1:ML, y1:py(H), x2:px(R/2), y2:py(H), stroke:'#D85A30', 'stroke-width':1, 'stroke-dasharray':'3,3', opacity:'0.6'});
+    svg.appendChild(hLine);
+
+    var pts = [];
+    for(var i=0;i<=N;i++){
+      var t = T * i / N;
+      pts.push([xAt(t), yAt(t)]);
+    }
+    var d = 'M ' + px(pts[0][0]) + ' ' + py(pts[0][1]);
+    for(var j=1;j<pts.length;j++){ d += ' L ' + px(pts[j][0]) + ' ' + py(pts[j][1]); }
+    var path = svgEl('path', {d:d, fill:'none', stroke:'#378ADD', 'stroke-width':2.5, 'stroke-linecap':'round'});
+    svg.appendChild(path);
+    var len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+
+    var dot = svgEl('circle', {r:5, fill:'#378ADD', stroke:'#ffffff', 'stroke-width':2, cx:px(0), cy:py(0)});
+    svg.appendChild(dot);
+
+    var duration = 9000;
+    var start = null;
+
+    function step(ts){
+      if(!start) start = ts;
+      var elapsed = ts - start;
+      var frac = Math.min(elapsed / duration, 1);
+      path.style.strokeDashoffset = (1-frac) * len;
+
+      var curT = frac * T;
+      var curX = xAt(curT), curY = yAt(curT);
+      dot.setAttribute('cx', px(curX));
+      dot.setAttribute('cy', py(curY));
+
+      liveInfo.textContent = 't = ' + fmt(curT) + ' s   x = ' + fmt(curX) + ' m   altura = ' + fmt(curY) + ' m';
+
+      if(frac < 1){
+        requestAnimationFrame(step);
+      } else {
+        finishPlot(v0, state.angleDeg, T, R, H, px, py);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finishPlot(v0, angleDeg, T, R, H, px, py){
+    state.animating = false;
+    liveInfo.textContent = '';
+
+    svg.appendChild(svgEl('circle', {r:4, fill:'#D85A30', cx:px(R/2), cy:py(H)}));
+    var hLabel = svgEl('text', {x:px(R/2), y:py(H)-10, 'text-anchor':'middle', 'font-size':'11', 'font-weight':'600', fill:'#D85A30'});
+    hLabel.textContent = 'H = ' + fmt(H) + ' m';
+    svg.appendChild(hLabel);
+
+    svg.appendChild(svgEl('circle', {r:5, fill:'#378ADD', stroke:'#ffffff', 'stroke-width':2, cx:px(R), cy:py(0)}));
+    var rLabel = svgEl('text', {x:px(R), y:py(0)-10, 'text-anchor':'middle', 'font-size':'11', 'font-weight':'600', fill:'#185fa5'});
+    rLabel.textContent = 'R = ' + fmt(R) + ' m';
+    svg.appendChild(rLabel);
+
+    var infoLines = [];
+    infoLines.push('Tempo total de voo: T = ' + fmt(T) + ' s');
+    infoLines.push('Altura máxima: H = ' + fmt(H) + ' m (atingida em t = ' + fmt(T/2) + ' s)');
+    infoLines.push('Alcance horizontal: R = ' + fmt(R) + ' m');
+    infoLines.push(angleDeg === 45 ? 'Com 45°, o alcance é o maior possível para essa velocidade inicial.' : (angleDeg < 45 ? 'Abaixo de 45°, a trajetória é mais "achatada" — menos altura, mas ainda não é o alcance máximo.' : 'Acima de 45°, a trajetória é mais "alta" — mais altura, mas o alcance já começa a diminuir.'));
+
+    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
+    resultBox.style.display = 'block';
+  }
+
+  plotBtn.addEventListener('click', runPlot);
+
+  resetBtn.addEventListener('click', function(){
+    state.animating = false;
+    liveInfo.textContent = '';
+    resultBox.style.display = 'none';
+    clearSvg();
+  });
+
+  updateEq();
+})();
+</script>
+</body>
+</html>

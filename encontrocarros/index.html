@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encontro de Dois Carros</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f3ef;
+    color: #1a1a19;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header.site-header {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .page-body {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  footer.site-footer {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e0d9;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    margin: 0 0 18px;
+  }
+  #scenario-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 8px;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  #scenario-box .item .label { font-size: 11px; color: #6b6a65; margin-bottom: 2px; }
+  #scenario-box .item .value { font-size: 16px; font-weight: 600; }
+  #scenario-box .item.d .value { color: #52514e; }
+  #scenario-box .item.v1 .value { color: #185fa5; }
+  #scenario-box .item.v2 .value { color: #993C1D; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #plot-btn { background: #378ADD; color: #fff; }
+  #plot-btn:hover { background: #185fa5; }
+  #reset-btn { background: #eceae2; color: #1a1a19; }
+  #reset-btn:hover { background: #d3d1c7; }
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-size: 12px;
+    color: #52514e;
+    margin-bottom: 8px;
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  #live-info {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b6a65;
+    min-height: 20px;
+    margin-bottom: 8px;
+    transition: color 0.3s;
+  }
+  #live-info.meeting { color: #1D9E75; }
+  #plot-wrap {
+    width: 100%;
+    background: #fbfbfa;
+    border: 1px solid #e1e0d9;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  #result-box {
+    display: none;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #3d3d3a;
+    line-height: 1.6;
+  }
+  #result-box div { margin-bottom: 4px; }
+  #result-box div:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+<div class="page-body">
+<div class="card">
+  <h1>Encontro de dois carros</h1>
+  <p class="subtitle">Carro 1 sai de A para B, carro 2 sai de B para A, ao mesmo tempo. Acompanhe devagar o encontro e o cruzamento no gráfico.</p>
+
+  <div id="scenario-box">
+    <div class="item d">
+      <div class="label">Distância A–B</div>
+      <div class="value">300 km</div>
+    </div>
+    <div class="item v1">
+      <div class="label">Carro 1 (A→B)</div>
+      <div class="value">50 km/h</div>
+    </div>
+    <div class="item v2">
+      <div class="label">Carro 2 (B→A)</div>
+      <div class="value">100 km/h</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="plot-btn">▶ Iniciar simulação</button>
+    <button id="reset-btn">↻ Repetir</button>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#378ADD;"></i>Carro 1 (A → B)</span>
+    <span><i style="background:#D85A30;"></i>Carro 2 (B → A)</span>
+  </div>
+
+  <div id="live-info"></div>
+
+  <div id="plot-wrap">
+    <svg id="plot" viewBox="0 0 340 400" role="img">
+      <title>Simulação do encontro de dois carros: trajeto e gráfico de posição por tempo</title>
+    </svg>
+  </div>
+
+  <div id="result-box"></div>
+
+</div>
+</div>
+
+<footer class="site-footer">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística</footer>
+
+<script>
+(function(){
+  var plotBtn = document.getElementById('plot-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var liveInfo = document.getElementById('live-info');
+  var svg = document.getElementById('plot');
+  var resultBox = document.getElementById('result-box');
+
+  var D = 300, V1 = 50, V2 = 100;
+  var animating = false;
+
+  var W = 340, H = 400, ML = 40, MR = 15;
+  var PW = W - ML - MR;
+  var trackY = 40, trackTop = 15;
+  var chartTop = 95, chartBottom = 365;
+  var N = 150;
+
+  function fmt(n){
+    var r = Math.round(n * 100) / 100;
+    return (Object.is(r, -0) ? 0 : r).toString();
+  }
+
+  function clearSvg(){
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
+    t.textContent = 'Simulação do encontro de dois carros: trajeto e gráfico de posição por tempo';
+    svg.appendChild(t);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  // Builds N+1 points of (t, pos) evenly spaced from 0 to tMax, plus their
+  // cumulative pixel-space length, so the stroke reveal can be driven
+  // directly by simulation time instead of by raw path length.
+  function buildSeries(tMax, posFn, pxFn, pyFn){
+    var pts = [];
+    for(var i=0;i<=N;i++){
+      var t = tMax * i / N;
+      pts.push([t, posFn(t)]);
+    }
+    var cum = [0];
+    for(var j=1;j<pts.length;j++){
+      var x0 = pxFn(pts[j-1][0]), y0 = pyFn(pts[j-1][1]);
+      var x1 = pxFn(pts[j][0]), y1 = pyFn(pts[j][1]);
+      var dx = x1-x0, dy = y1-y0;
+      cum.push(cum[j-1] + Math.sqrt(dx*dx+dy*dy));
+    }
+    return { pts: pts, cum: cum, tMax: tMax, total: cum[cum.length-1] };
+  }
+
+  function lengthAtTime(series, t){
+    var tt = Math.min(Math.max(t, 0), series.tMax);
+    var frac = series.tMax > 0 ? tt / series.tMax : 0;
+    var idxF = frac * N;
+    var i0 = Math.floor(idxF);
+    var i1 = Math.min(i0+1, N);
+    var localFrac = idxF - i0;
+    return series.cum[i0] + (series.cum[i1] - series.cum[i0]) * localFrac;
+  }
+
+  function pathString(pts, pxFn, pyFn){
+    var s = 'M ' + pxFn(pts[0][0]) + ' ' + pyFn(pts[0][1]);
+    for(var j=1;j<pts.length;j++){ s += ' L ' + pxFn(pts[j][0]) + ' ' + pyFn(pts[j][1]); }
+    return s;
+  }
+
+  function runPlot(){
+    if(animating) return;
+    animating = true;
+    resultBox.style.display = 'none';
+    liveInfo.textContent = '';
+    liveInfo.classList.remove('meeting');
+    clearSvg();
+
+    var d = D, v1 = V1, v2 = V2;
+    var tMeet = d / (v1 + v2);
+    var xMeet = v1 * tMeet;
+    var tArrivalA = d / v1;
+    var tArrivalB = d / v2;
+    var tEnd = Math.max(tArrivalA, tArrivalB, tMeet * 1.2);
+
+    function posA(t){ return Math.min(v1 * t, d); }
+    function posB(t){ return Math.max(d - v2 * t, 0); }
+
+    function pxTrack(pos){ return ML + (pos / d) * PW; }
+    function pxChart(t){ return ML + (t / tEnd) * PW; }
+    function pyChart(pos){ return chartBottom - (pos / d) * (chartBottom - chartTop); }
+
+    var g = svgEl('g', {});
+
+    g.appendChild(svgEl('line', {x1:ML, y1:trackY, x2:ML+PW, y2:trackY, stroke:'#d3d1c7', 'stroke-width':3}));
+    var labelA = svgEl('text', {x:ML, y:trackTop, 'text-anchor':'middle', 'font-size':'12', 'font-weight':'600', fill:'#52514e'});
+    labelA.textContent = 'A';
+    var labelB = svgEl('text', {x:ML+PW, y:trackTop, 'text-anchor':'middle', 'font-size':'12', 'font-weight':'600', fill:'#52514e'});
+    labelB.textContent = 'B';
+    g.appendChild(labelA);
+    g.appendChild(labelB);
+
+    g.appendChild(svgEl('line', {x1:ML, y1:chartBottom, x2:ML+PW, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
+    g.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
+    var y0lbl = svgEl('text', {x:ML-6, y:chartBottom+3, 'text-anchor':'end', 'font-size':'10', fill:'#898781'});
+    y0lbl.textContent = '0';
+    var ydlbl = svgEl('text', {x:ML-6, y:chartTop+3, 'text-anchor':'end', 'font-size':'10', fill:'#898781'});
+    ydlbl.textContent = fmt(d);
+    g.appendChild(y0lbl);
+    g.appendChild(ydlbl);
+    var xt0lbl = svgEl('text', {x:ML, y:chartBottom+16, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
+    xt0lbl.textContent = '0 h';
+    var xtElbl = svgEl('text', {x:ML+PW, y:chartBottom+16, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
+    xtElbl.textContent = fmt(tEnd) + ' h';
+    g.appendChild(xt0lbl);
+    g.appendChild(xtElbl);
+
+    svg.appendChild(g);
+
+    // Each line is built only up to its own arrival time — it never
+    // stretches past the point where that car actually stops.
+    var seriesA = buildSeries(Math.min(tArrivalA, tEnd), posA, pxChart, pyChart);
+    var seriesB = buildSeries(Math.min(tArrivalB, tEnd), posB, pxChart, pyChart);
+
+    var pathA = svgEl('path', {d: pathString(seriesA.pts, pxChart, pyChart), fill:'none', stroke:'#378ADD', 'stroke-width':2.5, 'stroke-linecap':'round'});
+    var pathB = svgEl('path', {d: pathString(seriesB.pts, pxChart, pyChart), fill:'none', stroke:'#D85A30', 'stroke-width':2.5, 'stroke-linecap':'round'});
+    svg.appendChild(pathA);
+    svg.appendChild(pathB);
+    pathA.style.strokeDasharray = seriesA.total;
+    pathA.style.strokeDashoffset = seriesA.total;
+    pathB.style.strokeDasharray = seriesB.total;
+    pathB.style.strokeDashoffset = seriesB.total;
+
+    var carA = svgEl('circle', {r:6, fill:'#378ADD', stroke:'#ffffff', 'stroke-width':2, cx:pxTrack(0), cy:trackY});
+    var carB = svgEl('circle', {r:6, fill:'#D85A30', stroke:'#ffffff', 'stroke-width':2, cx:pxTrack(d), cy:trackY});
+    svg.appendChild(carA);
+    svg.appendChild(carB);
+
+    var duration = 12000;
+    var start = null;
+    var meetingShown = false;
+    var meetHoldUntil = 0;
+    var arrivedA = false, arrivedB = false;
+
+    function step(ts){
+      if(!start) start = ts;
+      var elapsed = ts - start;
+      var frac = Math.min(elapsed / duration, 1);
+      var curT = frac * tEnd;
+
+      // Reveal each line by real elapsed simulation time (not by raw
+      // path length), so the tip of the line always matches the car's
+      // actual position at this instant — no drift between them.
+      pathA.style.strokeDashoffset = seriesA.total - lengthAtTime(seriesA, curT);
+      pathB.style.strokeDashoffset = seriesB.total - lengthAtTime(seriesB, curT);
+
+      var pa = posA(curT), pb = posB(curT);
+      carA.setAttribute('cx', pxTrack(pa));
+      carB.setAttribute('cx', pxTrack(pb));
+
+      if(!arrivedA && curT >= tArrivalA){
+        arrivedA = true;
+        svg.appendChild(svgEl('circle', {r:5, fill:'#ffffff', stroke:'#378ADD', 'stroke-width':2, cx:pxChart(tArrivalA), cy:pyChart(d)}));
+      }
+      if(!arrivedB && curT >= tArrivalB){
+        arrivedB = true;
+        svg.appendChild(svgEl('circle', {r:5, fill:'#ffffff', stroke:'#D85A30', 'stroke-width':2, cx:pxChart(tArrivalB), cy:pyChart(0)}));
+      }
+
+      if(!meetingShown && curT >= tMeet){
+        meetingShown = true;
+        meetHoldUntil = elapsed + 1800;
+        svg.appendChild(svgEl('line', {x1:pxTrack(xMeet), y1:15, x2:pxTrack(xMeet), y2:trackY, stroke:'#1D9E75', 'stroke-width':1.5, 'stroke-dasharray':'3,3'}));
+        svg.appendChild(svgEl('line', {x1:pxChart(tMeet), y1:pyChart(xMeet), x2:pxChart(tMeet), y2:chartBottom, stroke:'#1D9E75', 'stroke-width':1, 'stroke-dasharray':'3,3'}));
+        svg.appendChild(svgEl('circle', {r:7, fill:'#1D9E75', stroke:'#ffffff', 'stroke-width':2, cx:pxTrack(xMeet), cy:trackY}));
+        svg.appendChild(svgEl('circle', {r:6, fill:'#1D9E75', stroke:'#ffffff', 'stroke-width':2, cx:pxChart(tMeet), cy:pyChart(xMeet)}));
+      }
+
+      if(meetingShown && elapsed < meetHoldUntil){
+        liveInfo.textContent = 'Encontro! t = ' + fmt(tMeet) + ' h, a ' + fmt(xMeet) + ' km de A';
+        liveInfo.classList.add('meeting');
+      } else {
+        liveInfo.classList.remove('meeting');
+        liveInfo.textContent = 't = ' + fmt(curT) + ' h   carro 1: ' + fmt(pa) + ' km de A   carro 2: ' + fmt(d - pb) + ' km de B';
+      }
+
+      if(frac < 1){
+        requestAnimationFrame(step);
+      } else {
+        finishPlot(d, v1, v2, tMeet, xMeet, tArrivalA, tArrivalB);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finishPlot(d, v1, v2, tMeet, xMeet, tArrivalA, tArrivalB){
+    animating = false;
+    liveInfo.textContent = '';
+    liveInfo.classList.remove('meeting');
+
+    var infoLines = [];
+    infoLines.push('Tempo até o encontro: t = ' + fmt(tMeet) + ' h');
+    infoLines.push('Ponto de encontro: ' + fmt(xMeet) + ' km de A (' + fmt(d - xMeet) + ' km de B)');
+    infoLines.push('Carro 1 chegou ao destino B em ' + fmt(tArrivalA) + ' h');
+    infoLines.push('Carro 2 chegou ao destino A em ' + fmt(tArrivalB) + ' h');
+    infoLines.push('Velocidade relativa de aproximação: ' + fmt(v1+v2) + ' km/h');
+
+    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
+    resultBox.style.display = 'block';
+  }
+
+  plotBtn.addEventListener('click', runPlot);
+
+  resetBtn.addEventListener('click', function(){
+    animating = false;
+    liveInfo.textContent = '';
+    liveInfo.classList.remove('meeting');
+    resultBox.style.display = 'none';
+    clearSvg();
+  });
+})();
+</script>
+</body>
+</html>

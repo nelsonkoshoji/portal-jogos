@@ -3,618 +3,361 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Função Exponencial — Fatec Campinas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<title>Resfriamento da Água Fervendo</title>
 <style>
-  :root{
-    --bg: #0b1622;
-    --bg-panel: #0f2033;
-    --grid-line: rgba(120,170,220,0.18);
-    --grid-line-strong: rgba(150,200,255,0.35);
-    --blue: #3fa9f5;
-    --blue-soft: #7ec8ff;
-    --orange: #ff9d3f;
-    --yellow: #ffd166;
-    --green: #6ee7a0;
-    --pink: #ff6fa3;
-    --purple: #b48cff;
-    --paper: #eef4fa;
-    --muted: #7fa0bd;
-    --border: rgba(120,170,220,0.35);
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f3ef;
+    color: #1a1a19;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-
-  *{ box-sizing:border-box; }
-
-  body{
-    margin:0;
-    background:
-      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/28px 28px,
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/28px 28px,
-      var(--bg);
-    color: var(--paper);
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
+  header.site-header {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
   }
-
-  header.top{
-    padding: 18px 20px 16px;
-    text-align:center;
-    border-bottom: 2px dashed var(--border);
-    background: rgba(10,20,32,0.65);
+  .page-body {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
   }
-  header.top h1{
-    margin:0;
-    font-size: clamp(1.1rem, 3vw, 1.7rem);
-    letter-spacing:.5px;
-    color: var(--blue-soft);
-    text-shadow: 0 0 18px rgba(63,169,245,0.35);
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e0d9;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
-  header.top p{
-    margin: 6px 0 0;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .78rem;
-    color: var(--muted);
-    letter-spacing:.5px;
-    text-transform:uppercase;
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 4px;
   }
-
-  main{
-    flex:1;
-    width:100%;
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 20px 16px 10px;
-    display:flex;
-    flex-direction:column;
-    gap: 18px;
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    margin: 0 0 18px;
+    line-height: 1.5;
   }
-
-  .panel{
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
+  #scenario-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 8px;
+    background: #f4f3ef;
     border-radius: 10px;
-    padding: 16px;
-    position:relative;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    text-align: center;
   }
-  .panel::before{
-    content:"";
-    position:absolute; top:8px; left:8px; right:8px; bottom:8px;
-    border: 1px dashed rgba(150,200,255,0.15);
-    border-radius: 6px;
-    pointer-events:none;
-  }
-
-  .panel h2{
-    margin: 0 0 12px;
-    font-size: .95rem;
-    color: var(--yellow);
-    text-transform:uppercase;
-    letter-spacing:1px;
-  }
-
-  .field{ margin-bottom: 14px; }
-  .field label{
-    display:block;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .78rem;
-    color: var(--blue-soft);
-    margin-bottom: 5px;
-  }
-  .field input[type=number]{
-    width:100%;
-    padding: 9px 10px;
-    background: #081420;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--paper);
-    font-family:'JetBrains Mono', monospace;
-    font-size: 1rem;
-  }
-  .field input[type=number]:focus{
-    outline: 2px solid var(--blue);
-  }
-  .coef-grid{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
+  #scenario-box .item .label { font-size: 11px; color: #6b6a65; margin-bottom: 2px; }
+  #scenario-box .item .value { font-size: 15px; font-weight: 600; color: #52514e; }
+  .actions {
+    display: flex;
     gap: 10px;
+    margin: 0 0 14px;
   }
-
-  .equation-box{
-    font-family:'JetBrains Mono', monospace;
-    background:#081420;
-    border:1px solid var(--border);
-    border-radius:6px;
-    padding: 10px 12px;
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #plot-btn { background: #378ADD; color: #fff; }
+  #plot-btn:hover { background: #185fa5; }
+  #reset-btn { background: #eceae2; color: #1a1a19; }
+  #reset-btn:hover { background: #d3d1c7; }
+  #live-info {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 20px;
+    margin-bottom: 8px;
+  }
+  #plot-wrap {
+    width: 100%;
+    background: #fbfbfa;
+    border: 1px solid #e1e0d9;
+    border-radius: 12px;
+    padding: 8px;
     margin-bottom: 14px;
-    font-size: 1.05rem;
-    color: var(--green);
-    text-align:center;
-    letter-spacing: .5px;
-    word-break: break-word;
   }
-
-  .actions{ display:flex; gap:10px; margin-top: 6px; }
-  button{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:600;
-    border:none;
-    border-radius:6px;
-    padding: 10px 14px;
-    cursor:pointer;
-    font-size:.9rem;
-    letter-spacing:.3px;
-    transition: transform .1s ease, filter .15s ease;
-  }
-  button:active{ transform: scale(0.97); }
-  .btn-primary{ background: var(--blue); color:#04121e; flex:1; }
-  .btn-primary:hover{ filter: brightness(1.12); }
-  .btn-ghost{ background: transparent; border:1px solid var(--border); color: var(--muted); }
-  .btn-ghost:hover{ color: var(--paper); border-color: var(--blue-soft); }
-
-  .hint-list{ display:flex; flex-direction:column; gap:6px; }
-  .hint-chip{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:8px;
-    background: rgba(63,169,245,0.08);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    cursor:pointer;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .78rem;
-    color: var(--blue-soft);
-    text-align:left;
-  }
-  .hint-chip:hover{ background: rgba(63,169,245,0.18); border-color: var(--blue); }
-  .hint-chip span.desc{ color: var(--muted); font-family:'Space Grotesk', sans-serif; font-size: .72rem; }
-
-  .info-list{ font-size:.85rem; }
-  .info-row{
-    display:flex; justify-content:space-between;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px dashed var(--border);
-    font-family:'JetBrains Mono', monospace;
-  }
-  .info-row span:first-child{ color:var(--muted); flex-shrink:0; }
-  .info-row span:last-child{ color: var(--paper); font-weight:500; text-align:right; }
-
-  .graph-wrap{
-    display:flex;
-    flex-direction:column;
-  }
-  canvas{
-    width:100%;
-    height: 420px;
-    background: #081420;
-    border: 1px solid var(--border);
+  svg { width: 100%; height: auto; display: block; }
+  #result-box {
+    display: none;
+    background: #f4f3ef;
     border-radius: 10px;
-    display:block;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #3d3d3a;
+    line-height: 1.6;
   }
-  .graph-caption{
-    margin-top:8px;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .72rem;
-    color: var(--muted);
-    text-align:center;
-  }
-
-  footer.bottom{
-    margin-top: 24px;
-    padding: 22px 16px 26px;
-    text-align:center;
-    background: linear-gradient(180deg, rgba(63,169,245,0.06), rgba(255,157,63,0.06));
-    border-top: 2px dashed var(--border);
-  }
-  footer.bottom p.call{
-    margin:0 0 6px;
-    font-size: clamp(0.95rem, 2.4vw, 1.15rem);
-    font-weight:600;
-    color: var(--yellow);
-  }
-  footer.bottom p.courses{
-    margin:0;
-    max-width: 820px;
-    margin-inline:auto;
-    font-family:'JetBrains Mono', monospace;
-    font-size: .78rem;
-    line-height:1.6;
-    color: var(--blue-soft);
+  #result-box div { margin-bottom: 4px; }
+  #result-box div:last-child { margin-bottom: 0; }
+  footer.site-footer {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.6;
   }
 </style>
 </head>
 <body>
 
-<header class="top">
-  <h1>Bem vindos ao Portas Abertas da Fatec Campinas</h1>
-  <p>Simulador de Função Exponencial · ADS — Análise e Desenvolvimento de Sistemas</p>
-</header>
+<header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
 
-<main>
-  <section class="panel">
-    <h2>💡 Sugestões de valores para testar</h2>
-    <div class="hint-list" id="hintList"></div>
-  </section>
+<div class="page-body">
+<div class="card">
+  <h1>Resfriamento da água fervendo</h1>
+  <p class="subtitle">Água a 100°C esfriando bem devagar até a temperatura ambiente, com o eixo do gráfico esticado para destacar a curva exponencial. A xícara muda de cor conforme esfria: vermelho quando está quente, azul quando esfria.</p>
 
-  <section class="panel">
-    <h2>Coeficientes</h2>
-
-    <div class="equation-box" id="equationBox">f(x) = 1 · 2ˣ</div>
-
-    <div class="coef-grid">
-      <div class="field">
-        <label for="inputA">a (fator / valor inicial)</label>
-        <input type="number" id="inputA" value="1" step="0.5">
-      </div>
-      <div class="field">
-        <label for="inputB">b (base)</label>
-        <input type="number" id="inputB" value="2" step="0.1" min="0.01">
-      </div>
+  <div id="scenario-box">
+    <div class="item">
+      <div class="label">Temp. inicial</div>
+      <div class="value">100°C</div>
     </div>
-
-    <div class="actions">
-      <button class="btn-primary" id="btnPlot">▶ Plotar gráfico</button>
-      <button class="btn-ghost" id="btnClear">Limpar</button>
+    <div class="item">
+      <div class="label">Temp. ambiente</div>
+      <div class="value">20°C</div>
     </div>
-  </section>
+    <div class="item">
+      <div class="label">Tempo simulado</div>
+      <div class="value">360 min</div>
+    </div>
+  </div>
 
-  <section class="panel graph-wrap">
-    <h2>Gráfico</h2>
-    <canvas id="graphCanvas"></canvas>
-    <p class="graph-caption">A curva é desenhada bem lentamente para você acompanhar sua formação, ponto a ponto.</p>
-  </section>
+  <div class="actions">
+    <button id="plot-btn">▶ Iniciar resfriamento</button>
+    <button id="reset-btn">↻ Repetir</button>
+  </div>
 
-  <section class="panel">
-    <h2>Resultados</h2>
-    <div class="info-list" id="infoList"></div>
-  </section>
-</main>
+  <div id="live-info"></div>
 
-<footer class="bottom">
-  <p class="call">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos:</p>
-  <p class="courses">Analise e Desenvolvimento de Sistemas · Gestão Empresarial · Processos Químicos · Gestão da tecnologia da Informação · Gestão de Energia e Eficiência Energética · Logística</p>
-</footer>
+  <div id="plot-wrap">
+    <svg id="plot" viewBox="0 0 340 700" role="img">
+      <title>Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em escala ampliada</title>
+    </svg>
+  </div>
+
+  <div id="result-box"></div>
+
+</div>
+</div>
+
+<footer class="site-footer">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística</footer>
 
 <script>
 (function(){
-  const canvas = document.getElementById('graphCanvas');
-  const ctx = canvas.getContext('2d');
-  const inputA = document.getElementById('inputA');
-  const inputB = document.getElementById('inputB');
-  const equationBox = document.getElementById('equationBox');
-  const infoList = document.getElementById('infoList');
-  const hintList = document.getElementById('hintList');
-  const btnPlot = document.getElementById('btnPlot');
-  const btnClear = document.getElementById('btnClear');
+  var plotBtn = document.getElementById('plot-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var liveInfo = document.getElementById('live-info');
+  var svg = document.getElementById('plot');
+  var resultBox = document.getElementById('result-box');
 
-  let X_MIN = -6, X_MAX = 6;   // faixa do eixo X exibida (recalculada a cada plotagem)
-  const SAMPLES = 260;         // pontos usados para desenhar a curva
-  const ANIM_DURATION = 8000;  // ms — plotagem bem lenta
-  const CAP = 20;              // "altura" alvo (em módulo) nas bordas do núcleo do gráfico
+  var T0 = 100, TAMB = 20, K = 0.015;
+  var TEND = 360;
+  var animating = false;
 
-  let animId = null;
-  let currentCoefs = null;
-  let yRange = [-3, 23];
+  var W = 340, H = 700, ML = 40, MR = 15;
+  var PW = W - ML - MR;
+  var cupCx = 170, cupTop = 40, cupBottom = 115, cupHalfW = 30;
+  var chartTop = 175, chartBottom = 680;
+  var PH = chartBottom - chartTop;
+  var N = 150;
 
-  const hints = [
-    { a: 1, b: 2, desc: '.' },
-    { a: 1, b: 0.5, desc: '.' },
-    { a: 2, b: 3, desc: '.' },
-    { a: -1, b: 2, desc: '.' },
-    { a: 1, b: 2.71828, desc: '.' },
-    { a: 0.5, b: 0.2, desc: '.' }
-  ];
+  var HOT = [226, 75, 74];
+  var COLD = [55, 138, 221];
 
-  function buildHints(){
-    hintList.innerHTML = '';
-    hints.forEach(h => {
-      const chip = document.createElement('div');
-      chip.className = 'hint-chip';
-      chip.innerHTML = `<strong>a=${h.a}, b=${h.b}</strong><span class="desc">${h.desc}</span>`;
-      chip.addEventListener('click', () => {
-        inputA.value = h.a;
-        inputB.value = h.b;
-        updateEquation();
-        plot();
-      });
-      hintList.appendChild(chip);
+  function fmt(n){
+    var r = Math.round(n * 10) / 10;
+    return r.toFixed(1).replace('.', ',');
+  }
+  function fmt0(n){ return Math.round(n).toString(); }
+
+  function temp(t){ return TAMB + (T0 - TAMB) * Math.exp(-K * t); }
+
+  function colorFor(T){
+    var frac = (T - TAMB) / (T0 - TAMB);
+    frac = Math.max(0, Math.min(1, frac));
+    var r = Math.round(COLD[0] + (HOT[0]-COLD[0])*frac);
+    var g = Math.round(COLD[1] + (HOT[1]-COLD[1])*frac);
+    var b = Math.round(COLD[2] + (HOT[2]-COLD[2])*frac);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function clearSvg(){
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
+    t.textContent = 'Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em escala ampliada';
+    svg.appendChild(t);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function pxChart(t){ return ML + (t / TEND) * PW; }
+
+  function runPlot(){
+    if(animating) return;
+    animating = true;
+    resultBox.style.display = 'none';
+    liveInfo.textContent = '';
+    clearSvg();
+
+    var defs = svgEl('defs', {});
+    var grad = svgEl('linearGradient', {id:'tempGrad', gradientUnits:'userSpaceOnUse', x1:pxChart(0), y1:0, x2:pxChart(TEND), y2:0});
+    grad.appendChild(svgEl('stop', {offset:'0%', 'stop-color':'rgb(' + HOT.join(',') + ')'}));
+    grad.appendChild(svgEl('stop', {offset:'55%', 'stop-color':'#9a5aa8'}));
+    grad.appendChild(svgEl('stop', {offset:'100%', 'stop-color':'rgb(' + COLD.join(',') + ')'}));
+    defs.appendChild(grad);
+    var chartClip = svgEl('clipPath', {id:'tempClip'});
+    var chartClipRect = svgEl('rect', {x:pxChart(0), y:chartTop, width:0, height:PH});
+    chartClip.appendChild(chartClipRect);
+    defs.appendChild(chartClip);
+    svg.appendChild(defs);
+
+    // Cup
+    var cupBody = svgEl('path', {
+      d: 'M ' + (cupCx-cupHalfW) + ' ' + cupTop + ' L ' + (cupCx-cupHalfW+6) + ' ' + cupBottom + ' Q ' + cupCx + ' ' + (cupBottom+8) + ' ' + (cupCx+cupHalfW-6) + ' ' + cupBottom + ' L ' + (cupCx+cupHalfW) + ' ' + cupTop + ' Z',
+      fill: colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5
     });
-  }
+    svg.appendChild(cupBody);
+    svg.appendChild(svgEl('ellipse', {cx:cupCx, cy:cupTop, rx:cupHalfW, ry:6, fill:colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5, opacity:'0.9'}));
+    svg.appendChild(svgEl('path', {d:'M ' + (cupCx+cupHalfW-2) + ' ' + (cupTop+13) + ' q 15 5 15 20 q 0 15 -15 20', fill:'none', stroke:'#8a8a86', 'stroke-width':4}));
 
-  function f(x, a, b){ return a * Math.pow(b, x); }
-
-  function niceStep(range){
-    const raw = range / 8;
-    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
-    const norm = raw / mag;
-    let step;
-    if (norm < 1.5) step = 1;
-    else if (norm < 3) step = 2;
-    else if (norm < 7) step = 5;
-    else step = 10;
-    return step * mag;
-  }
-
-  // o lado de crescimento de uma exponencial dispara muito rápido; em vez de
-  // usar uma faixa fixa de X (que esmagaria a curva perto de x=0), calculamos
-  // até onde ir para que |f(x)| chegue a um valor "teto" (CAP) — essa é a
-  // mesma ideia usada nos simuladores de 3º/4º grau, adaptada para a curva
-  // que só tem uma "ponta" que cresce (a outra se aproxima da assíntota y=0)
-  function computeCoreX(a, b){
-    let M;
-    if (b <= 0 || b === 1 || a === 0){
-      M = 5;
-    } else {
-      const xEdge = Math.log(CAP / Math.abs(a)) / Math.log(b);
-      M = Math.min(Math.max(Math.abs(xEdge), 1.5), 12);
-    }
-    return [-M, M];
-  }
-
-  function computeDisplayXRange(coreMin, coreMax){
-    const pad = (coreMax - coreMin) * 0.35;
-    let xMin = coreMin - pad;
-    let xMax = coreMax + pad;
-    xMin = Math.max(xMin, -25);
-    xMax = Math.min(xMax, 25);
-    return [xMin, xMax];
-  }
-
-  function computeYRange(a, b, coreMin, coreMax){
-    const candidates = [f(coreMin, a, b), f(coreMax, a, b), 0, a];
-    let yMin = Math.min(...candidates);
-    let yMax = Math.max(...candidates);
-    if (yMax - yMin < 4){
-      const mid = (yMax + yMin) / 2;
-      yMin = mid - 4; yMax = mid + 4;
-    }
-    const pad = (yMax - yMin) * 0.15;
-    return [yMin - pad, yMax + pad];
-  }
-
-  function resizeCanvas(){
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawAxes();
-    if (currentCoefs) drawStaticCurve(currentCoefs.a, currentCoefs.b);
-  }
-
-  function toPixel(x, y){
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const px = ((x - X_MIN) / (X_MAX - X_MIN)) * w;
-    const py = h - ((y - yRange[0]) / (yRange[1] - yRange[0])) * h;
-    return [px, py];
-  }
-
-  function drawAxes(){
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    ctx.clearRect(0, 0, w, h);
-
-    const stepX = niceStep(X_MAX - X_MIN);
-    const stepY = niceStep(yRange[1] - yRange[0]);
-
-    ctx.strokeStyle = 'rgba(120,170,220,0.15)';
-    ctx.lineWidth = 1;
-    for (let x = Math.ceil(X_MIN / stepX) * stepX; x <= X_MAX; x += stepX){
-      const [px] = toPixel(x, 0);
-      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
-    }
-    const yStart = Math.ceil(yRange[0] / stepY) * stepY;
-    for (let y = yStart; y <= yRange[1]; y += stepY){
-      const [, py] = toPixel(0, y);
-      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    var steamPaths = [];
+    for(var sIdx=0; sIdx<3; sIdx++){
+      var sx = cupCx - 13 + sIdx*13;
+      var sp = svgEl('path', {d:'M ' + sx + ' ' + (cupTop-6) + ' q -5 -9 0 -18 q 5 -9 0 -18', fill:'none', stroke:'#ffffff', 'stroke-width':2, 'stroke-linecap':'round', opacity:'0'});
+      svg.appendChild(sp);
+      steamPaths.push(sp);
     }
 
-    ctx.strokeStyle = 'rgba(150,200,255,0.55)';
-    ctx.lineWidth = 1.6;
-    if (yRange[0] <= 0 && yRange[1] >= 0){
-      const [, y0] = toPixel(0, 0);
-      ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(w, y0); ctx.stroke();
-    }
-    const [x0] = toPixel(0, 0);
-    ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, h); ctx.stroke();
+    var tempLabel = svgEl('text', {x:cupCx, y:cupBottom+30, 'text-anchor':'middle', 'font-size':'20', 'font-weight':'600', fill:colorFor(T0)});
+    tempLabel.textContent = fmt0(T0) + '°C';
+    svg.appendChild(tempLabel);
 
-    ctx.fillStyle = 'rgba(150,200,255,0.45)';
-    ctx.font = '11px "JetBrains Mono", monospace';
-    for (let x = Math.ceil(X_MIN / stepX) * stepX; x <= X_MAX; x += stepX){
-      if (x === 0) continue;
-      const [px] = toPixel(x, 0);
-      const [, yBase] = toPixel(0, Math.max(yRange[0], Math.min(yRange[1], 0)));
-      ctx.fillText(String(Math.round(x * 100) / 100), px - 4, yBase + 14);
-    }
-    for (let y = yStart; y <= yRange[1]; y += stepY){
-      if (Math.abs(y) < 1e-9) continue;
-      const [, py] = toPixel(0, y);
-      ctx.fillText(String(Math.round(y * 100) / 100), x0 + 6, py + 3);
-    }
-  }
-
-  function curvePoints(a, b){
-    const pts = [];
-    for (let i = 0; i <= SAMPLES; i++){
-      const x = X_MIN + (X_MAX - X_MIN) * (i / SAMPLES);
-      pts.push([x, f(x, a, b)]);
-    }
-    return pts;
-  }
-
-  function drawKeyPoints(a, b){
-    const [pyx, pyy] = toPixel(0, a);
-    drawDot(pyx, pyy, '#ffd166');
-  }
-
-  function drawDot(x, y, color){
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = '#04121e';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  function drawStaticCurve(a, b){
-    drawAxes();
-    const pts = curvePoints(a, b);
-    ctx.strokeStyle = '#ff9d3f';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    let started = false;
-    pts.forEach(([x, y]) => {
-      const [px, py] = toPixel(x, y);
-      if (!started){ ctx.moveTo(px, py); started = true; } else { ctx.lineTo(px, py); }
+    // Chart (y-axis stretched for a strong exponential feel)
+    function py(v){ return chartBottom - (v - (TAMB-5)) / ((T0+5) - (TAMB-5)) * PH; }
+    var axesG = svgEl('g', {});
+    var xAxisY = py(TAMB-5);
+    axesG.appendChild(svgEl('line', {x1:ML, y1:xAxisY, x2:ML+PW, y2:xAxisY, stroke:'#b4b2a9', 'stroke-width':1}));
+    axesG.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
+    [0, 60, 120, 180, 240, 300, 360].forEach(function(v){
+      var lbl = svgEl('text', {x:pxChart(v), y:xAxisY+14, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
+      lbl.textContent = v + ' min';
+      axesG.appendChild(lbl);
     });
-    ctx.stroke();
-    drawKeyPoints(a, b);
-  }
+    [20, 30, 40, 50, 60, 70, 80, 90, 100].forEach(function(v){
+      var y = py(v);
+      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'9', fill:'#898781'});
+      lbl.textContent = v + '°C';
+      axesG.appendChild(lbl);
+      axesG.appendChild(svgEl('line', {x1:ML, y1:y, x2:ML+PW, y2:y, stroke:'#e1e0d9', 'stroke-width':1}));
+    });
+    svg.appendChild(axesG);
 
-  function easeInOutQuad(t){
-    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-  }
+    var ambLine = svgEl('line', {x1:ML, y1:py(TAMB), x2:ML+PW, y2:py(TAMB), stroke:'#b4b2a9', 'stroke-width':1, 'stroke-dasharray':'3,3'});
+    svg.appendChild(ambLine);
 
-  function animateCurve(a, b, duration){
-    if (animId) cancelAnimationFrame(animId);
-    currentCoefs = null;
+    var pts = [];
+    for(var i=0;i<=N;i++){
+      var t = TEND * i / N;
+      pts.push([t, temp(t)]);
+    }
+    function pathFromPts(ptsArr){
+      var s = 'M ' + pxChart(ptsArr[0][0]) + ' ' + py(ptsArr[0][1]);
+      for(var j=1;j<ptsArr.length;j++){ s += ' L ' + pxChart(ptsArr[j][0]) + ' ' + py(ptsArr[j][1]); }
+      return s;
+    }
+    var chartGroup = svgEl('g', {'clip-path':'url(#tempClip)'});
+    svg.appendChild(chartGroup);
+    var path = svgEl('path', {d: pathFromPts(pts), fill:'none', stroke:'url(#tempGrad)', 'stroke-width':3.4, 'stroke-linecap':'round'});
+    chartGroup.appendChild(path);
 
-    const pts = curvePoints(a, b);
-    const pixelPts = pts.map(([x, y]) => toPixel(x, y));
-    const start = performance.now();
+    var dot = svgEl('circle', {r:5, fill:colorFor(T0), stroke:'#ffffff', 'stroke-width':2, cx:pxChart(0), cy:py(T0)});
+    svg.appendChild(dot);
 
-    function frame(now){
-      const elapsed = now - start;
-      let t = Math.min(elapsed / duration, 1);
-      const eased = easeInOutQuad(t);
-      const upTo = eased * (pixelPts.length - 1);
-      const fullIdx = Math.floor(upTo);
-      const frac = upTo - fullIdx;
+    var duration = 15000;
+    var start = null;
 
-      drawAxes();
-      ctx.strokeStyle = '#ff9d3f';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      for (let i = 0; i <= fullIdx; i++){
-        const [px, py] = pixelPts[i];
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      let tipX, tipY;
-      if (fullIdx < pixelPts.length - 1){
-        const [x1, y1] = pixelPts[fullIdx];
-        const [x2, y2] = pixelPts[fullIdx + 1];
-        tipX = x1 + (x2 - x1) * frac;
-        tipY = y1 + (y2 - y1) * frac;
-        ctx.lineTo(tipX, tipY);
+    function step(ts){
+      if(!start) start = ts;
+      var elapsed = ts - start;
+      var frac = Math.min(elapsed / duration, 1);
+      var curT = frac * TEND;
+      var curTemp = temp(curT);
+      var col = colorFor(curTemp);
+
+      chartClipRect.setAttribute('width', Math.max(0, pxChart(curT) - pxChart(0)));
+      dot.setAttribute('cx', pxChart(curT));
+      dot.setAttribute('cy', py(curTemp));
+      dot.setAttribute('fill', col);
+
+      cupBody.setAttribute('fill', col);
+      tempLabel.setAttribute('fill', col);
+      tempLabel.textContent = fmt0(curTemp) + '°C';
+
+      var steamOpacity = Math.max(0, (curTemp - TAMB - 15) / (T0 - TAMB - 15));
+      steamPaths.forEach(function(sp){ sp.setAttribute('opacity', (steamOpacity*0.85).toFixed(2)); });
+
+      liveInfo.style.color = col;
+      liveInfo.textContent = 't = ' + fmt(curT) + ' min   temperatura: ' + fmt(curTemp) + ' °C';
+
+      if(frac < 1){
+        requestAnimationFrame(step);
       } else {
-        [tipX, tipY] = pixelPts[pixelPts.length - 1];
-      }
-      ctx.stroke();
-      drawDot(tipX, tipY, '#3fa9f5');
-
-      if (t < 1){
-        animId = requestAnimationFrame(frame);
-      } else {
-        currentCoefs = { a, b };
-        drawStaticCurve(a, b);
+        finishPlot();
       }
     }
-    animId = requestAnimationFrame(frame);
+    requestAnimationFrame(step);
   }
 
-  function fmtNum(n){
-    if (!isFinite(n)) return '—';
-    return Number.isInteger(n) ? String(n) : (Math.round(n * 1000) / 1000).toString();
+  function finishPlot(){
+    animating = false;
+    liveInfo.textContent = '';
+
+    var halfLifeLike = Math.log(2) / K;
+    var infoLines = [];
+    infoLines.push('Com o eixo Y esticado, cada grau ocupa mais espaço vertical — a queda inicial fica bem mais dramática, reforçando a "cara" de curva exponencial.');
+    infoLines.push('Com k = ' + K + ', a água esfria devagar: precisou de ' + fmt0(TEND) + ' minutos (6 horas simuladas) para chegar bem perto da temperatura ambiente, em ' + fmt(temp(TEND)) + '°C.');
+    infoLines.push('A diferença de temperatura cai pela metade a cada ' + fmt(halfLifeLike) + ' minutos — quase 46 minutos.');
+
+    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
+    resultBox.style.display = 'block';
   }
 
-  function updateEquation(){
-    const a = parseFloat(inputA.value);
-    const b = parseFloat(inputB.value);
-    const aVal = isNaN(a) ? 0 : a;
-    const bVal = isNaN(b) ? 0 : b;
-    let text;
-    if (aVal === 1) text = `${fmtNum(bVal)}ˣ`;
-    else if (aVal === -1) text = `-${fmtNum(bVal)}ˣ`;
-    else text = `${fmtNum(aVal)} · ${fmtNum(bVal)}ˣ`;
-    equationBox.textContent = 'f(x) = ' + text;
-  }
+  plotBtn.addEventListener('click', runPlot);
 
-  function updateInfo(a, b){
-    if (a === 0 || b <= 0 || b === 1){
-      infoList.innerHTML = `
-        <div class="info-row"><span>Atenção</span><span>para ser exponencial: a ≠ 0, b > 0 e b ≠ 1</span></div>
-      `;
-      return;
-    }
-    const comportamento = b > 1 ? 'Crescente' : 'Decrescente';
-    const sinal = a > 0 ? 'Sempre positiva (nunca toca o eixo X)' : 'Sempre negativa (nunca toca o eixo X)';
-
-    infoList.innerHTML = `
-      <div class="info-row"><span>Comportamento</span><span>${comportamento}</span></div>
-      <div class="info-row"><span>Interceptação eixo Y</span><span>(0, ${fmtNum(a)})</span></div>
-      <div class="info-row"><span>Assíntota horizontal</span><span>y = 0</span></div>
-      <div class="info-row"><span>Sinal da função</span><span>${sinal}</span></div>
-      <div class="info-row"><span>Raízes</span><span>não possui</span></div>
-      <div class="info-row"><span>Domínio</span><span>todos os reais</span></div>
-    `;
-  }
-
-  function plot(){
-    const a = parseFloat(inputA.value);
-    const b = parseFloat(inputB.value);
-    if (isNaN(a) || isNaN(b)){
-      alert('Digite valores numéricos válidos para a e b.');
-      return;
-    }
-    if (a === 0){
-      alert('Com a = 0 a função exponencial fica identicamente nula. Escolha um valor diferente de 0 para "a".');
-    }
-    if (b <= 0 || b === 1){
-      alert('A base "b" precisa ser maior que 0 e diferente de 1 para caracterizar uma função exponencial.');
-    }
-    updateEquation();
-    updateInfo(a, b);
-    if (a !== 0 && b > 0 && b !== 1){
-      const [coreMin, coreMax] = computeCoreX(a, b);
-      [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
-      yRange = computeYRange(a, b, coreMin, coreMax);
-      animateCurve(a, b, ANIM_DURATION);
-    }
-  }
-
-  btnPlot.addEventListener('click', plot);
-  inputA.addEventListener('input', updateEquation);
-  inputB.addEventListener('input', updateEquation);
-
-  function resetView(){
-    const [coreMin, coreMax] = computeCoreX(1, 2);
-    [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
-    yRange = computeYRange(1, 2, coreMin, coreMax);
-  }
-
-  btnClear.addEventListener('click', () => {
-    if (animId) cancelAnimationFrame(animId);
-    currentCoefs = null;
-    resetView();
-    drawAxes();
-    infoList.innerHTML = '';
+  resetBtn.addEventListener('click', function(){
+    animating = false;
+    liveInfo.textContent = '';
+    resultBox.style.display = 'none';
+    clearSvg();
   });
-
-  window.addEventListener('resize', resizeCanvas);
-
-  buildHints();
-  updateEquation();
-  resetView();
-  resizeCanvas();
 })();
 </script>
-
 </body>
 </html>
