@@ -33,8 +33,22 @@
     font-family:'Space Grotesk', sans-serif;
     min-height:100vh;
     display:flex;
-    justify-content:center;
+    flex-direction:column;
+    align-items:center;
     padding: env(safe-area-inset-top,0) 0 max(24px, env(safe-area-inset-bottom,0)) 0;
+  }
+  .site-header{
+    width:100%;
+    text-align:center;
+    padding:20px 16px;
+    background:rgba(16,26,46,0.85);
+    border-bottom:1px solid var(--panel-border);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--blue);
+    letter-spacing:0.3px;
+    text-shadow:0 0 12px rgba(90,169,255,0.35);
   }
   .wrap{
     width:100%;
@@ -290,13 +304,34 @@
     margin-top:4px;
   }
 
-  footer{
+  footer.game-footer{
     text-align:center;
     margin-top:18px;
     font-family:'JetBrains Mono', monospace;
     font-size:10.5px;
     color:var(--ink-dim);
     opacity:.7;
+  }
+
+  .site-footer{
+    width:100%;
+    max-width:480px;
+    text-align:center;
+    margin-top:20px;
+    padding:18px 16px 6px;
+    border-top:1px solid var(--panel-border);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    color:var(--ink-dim);
+    line-height:1.55;
+  }
+  .site-footer strong{
+    display:block;
+    margin-bottom:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    color:var(--blue);
+    text-shadow:0 0 10px rgba(90,169,255,0.35);
   }
 
   @keyframes shake {
@@ -308,6 +343,9 @@
 </style>
 </head>
 <body>
+
+<div class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</div>
+
 <div class="wrap">
 
   <header>
@@ -374,8 +412,13 @@
     <div class="desc" id="winDesc"></div>
   </div>
 
-  <footer>Fatec Portas Abertas · Análise e Desenvolvimento de Sistemas</footer>
+  <footer class="game-footer">Fatec Portas Abertas · Análise e Desenvolvimento de Sistemas</footer>
 </div>
+
+<footer class="site-footer">
+  <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+  Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+</footer>
 
 <script>
 (function(){

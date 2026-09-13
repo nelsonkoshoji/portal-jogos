@@ -33,10 +33,32 @@
     font-family:'Space Grotesk', sans-serif;
     min-height:100vh;
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .site-header{
+    width:100%;
+    text-align:center;
+    padding:20px 16px;
+    background:rgba(15,44,76,0.55);
+    border-bottom:1px solid var(--navy-line);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--cyan);
+    letter-spacing:0.3px;
+    text-shadow:0 0 12px rgba(127,209,224,0.35);
+  }
+
+  .page-body{
+    flex:1;
+    width:100%;
+    display:flex;
     align-items:center;
     justify-content:center;
     padding:24px;
-    -webkit-font-smoothing:antialiased;
   }
 
   .sheet{
@@ -219,7 +241,7 @@
     color:var(--cyan);
   }
 
-  footer{
+  footer.sheet-footer{
     margin-top:18px;
     font-family:'JetBrains Mono', monospace;
     font-size:0.62rem;
@@ -229,6 +251,26 @@
     opacity:0.7;
   }
 
+  .site-footer{
+    width:100%;
+    text-align:center;
+    padding:18px 16px 26px;
+    background:rgba(15,44,76,0.55);
+    border-top:1px solid var(--navy-line);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    color:var(--paper-dim);
+    line-height:1.55;
+  }
+  .site-footer strong{
+    display:block;
+    margin-bottom:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px;
+    color:var(--cyan);
+    text-shadow:0 0 10px rgba(127,209,224,0.35);
+  }
+
   @media (prefers-reduced-motion: reduce){
     .pad{ transition:none; }
   }
@@ -236,6 +278,9 @@
 </head>
 <body>
 
+<div class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</div>
+
+<div class="page-body">
 <main class="sheet">
   <div class="corner-tl"></div>
   <div class="corner-br"></div>
@@ -285,8 +330,14 @@
     <button class="cta" id="btn-start">INICIAR SEQUÊNCIA</button>
   </div>
 
-  <footer>SISTEMA DE ÁUDIO WEB · 4 CANAIS · DIFICULDADE PROGRESSIVA</footer>
+  <footer class="sheet-footer">SISTEMA DE ÁUDIO WEB · 4 CANAIS · DIFICULDADE PROGRESSIVA</footer>
 </main>
+</div>
+
+<footer class="site-footer">
+  <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+  Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+</footer>
 
 <script>
 (function(){
