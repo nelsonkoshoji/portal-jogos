@@ -1,45 +1,265 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Jogos - Portas Abertas</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simuladores de Funções — Portas Abertas Fatec Campinas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blueprint: #0a3d62;
+    --blueprint-dark: #062a45;
+    --blueprint-line: rgba(255,255,255,0.14);
+    --grid-line: rgba(255,255,255,0.06);
+    --paper: #eef4fb;
+    --accent: #ffd23f;
+    --accent-2: #4fd1c5;
+    --text-light: #eaf2fb;
+    --text-muted: #9fc0e0;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--blueprint);
+    color: var(--text-light);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100%;
+  }
+
+  body {
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-color: var(--blueprint);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header.site-header {
+    background: var(--blueprint-dark);
+    border-bottom: 2px dashed var(--blueprint-line);
+    padding: 22px 16px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  header.site-header::before {
+    content: "";
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 1px solid var(--blueprint-line);
+    pointer-events: none;
+  }
+
+  header.site-header .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    margin-bottom: 8px;
+  }
+
+  header.site-header h1 {
+    margin: 0;
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-light);
+  }
+
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+  }
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .page-title .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .page-title h2 {
+    margin: 0 0 8px;
+    font-size: clamp(1.4rem, 5vw, 2.1rem);
+    font-weight: 600;
+  }
+
+  .page-title p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 520px;
+    margin-inline: auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  a.card-jogo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--blueprint-line);
+    border-radius: 10px;
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+
+  a.card-jogo::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent-2);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  a.card-jogo .icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+  }
+
+  a.card-jogo .label {
+    flex: 1;
+  }
+
+  a.card-jogo .go {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  a.card-jogo:hover,
+  a.card-jogo:focus-visible {
+    background: rgba(255,255,255,0.09);
+    border-color: var(--accent-2);
+    transform: translateY(-2px);
+  }
+
+  a.card-jogo:hover::before,
+  a.card-jogo:focus-visible::before {
+    opacity: 1;
+  }
+
+  a.card-jogo:hover .go,
+  a.card-jogo:focus-visible .go {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  a.card-jogo:active {
+    transform: translateY(0);
+  }
+
+  footer.site-footer {
+    background: var(--blueprint-dark);
+    border-top: 2px dashed var(--blueprint-line);
+    padding: 22px 16px 26px;
+    text-align: center;
+  }
+
+  footer.site-footer .courses-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  footer.site-footer p {
+    margin: 0 auto;
+    max-width: 640px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  footer.site-footer p strong {
+    color: var(--text-light);
+  }
+
+  @media (max-width: 480px) {
+    a.card-jogo { padding: 16px; font-size: 0.95rem; }
+    a.card-jogo .icon { width: 34px; height: 34px; font-size: 1.35rem; }
+    .go { display: none; }
+  }
+</style>
 </head>
 <body>
-    <main class="container">
-        <h1>🎮 Portal de Jogos</h1>
-        <p>Escolha um jogo abaixo para começar a se divertir:</p>
-        
-        <div class="menu-jogos">
-            <a href="jogo-da-velha/" class="card-jogo">❌ Jogo da Velha</a>
-            <a href="forca/" class="card-jogo">🤠 Jogo da Forca</a>
-            <a href="cobras/" class="card-jogo">🐍 Jogo da Cobrinha</a>
-            <a href="torre-de-hanoi/" class="card-jogo">🗼 Torre de Hanoi</a>
-            <a href="quinze-puzzle/" class="card-jogo">🧩 Quinze Puzzle</a>
-            <a href="adivinhe-o-numero/" class="card-jogo">🎯 Adivinhe o Numero</a>
-            <a href="lancamento-de-projetil/" class="card-jogo">🚀 Lançamento de Projetil</a>
-            <a href="sudoku/" class="card-jogo">🔢 Sudoku</a>
-            <a href="tetris/" class="card-jogo">🧱 Tetris</a>            
-            <a href="cifra-de-cesar/" class="card-jogo">🔐 Cifra de Cesar</a>                        
-            <a href="simon-says/" class="card-jogo">🎵 Simon-Says</a>                                   
-            <a href="cata-bugs/" class="card-jogo">🐛 Cata-Bugs</a>                                                 
-        </div>
-        <h1>🎮 Simulador Educacional Matemática</h1>
-        <p>Escolha um simulador para aprender:</p>
-        
-        <div class="menu-jogos">
-            <a href="funcao1grau/" class="card-jogo">Funcao do 1o grau</a>
-            <a href="funcao2grau/" class="card-jogo">Funcao do 2o grau</a>            
-            <a href="funcao3grau/" class="card-jogo">Funcao do 3o grau</a>            
-            <a href="funcao4grau/" class="card-jogo">Funcao do 4o grau</a>                        
-            <a href="funcaoexponencial/" class="card-jogo">Funcao Exponencial</a>                        
-            <a href="funcaoseno/" class="card-jogo">Funcao Seno</a>     
-            <a href="resfriamento/" class="card-jogo">Refriamento de Água</a>                                                
-            <a href="cicloterralua/" class="card-jogo">Ciclo Terra/Lua</a>    
-            <a href="encontrocarros/" class="card-jogo">Encontro entre dois Carros</a>    
-            <a href="trajetoria/" class="card-jogo">Trajetória de uma Lançamento Horizontal</a>    
-        </div>
-    </main>
+
+  <header class="site-header">
+    <div class="kicker">Fatec Campinas · Tecnologia em Análise e Desenvolvimento de Sistemas</div>
+    <h1>Bem vindos ao Portas Abertas da Fatec Campinas</h1>
+  </header>
+
+  <main>
+    <div class="page-title">
+      <div class="eyebrow">Games Hub</div>
+      <h2>Simuladores de Funções</h2>
+      <p>Escolha um simulador para explorar o comportamento gráfico de cada tipo de função.</p>
+    </div>
+
+    <nav class="grid">
+      <a href="funcao1grau/" class="card-jogo"><span class="icon">📏</span><span class="label">Função do 1º grau</span><span class="go">ABRIR →</span></a>
+      <a href="funcao2grau/" class="card-jogo"><span class="icon">🎢</span><span class="label">Função do 2º grau</span><span class="go">ABRIR →</span></a>
+      <a href="funcao3grau/" class="card-jogo"><span class="icon">➰</span><span class="label">Função do 3º grau</span><span class="go">ABRIR →</span></a>
+      <a href="funcao4grau/" class="card-jogo"><span class="icon">〰️</span><span class="label">Função do 4º grau</span><span class="go">ABRIR →</span></a>
+      <a href="funcaoexponencial/" class="card-jogo"><span class="icon">🦠</span><span class="label">Função Exponencial</span><span class="go">ABRIR →</span></a>
+      <a href="funcaoseno/" class="card-jogo"><span class="icon">🌊</span><span class="label">Função Seno</span><span class="go">ABRIR →</span></a>
+      <a href="resfriamento/" class="card-jogo"><span class="icon">🧊</span><span class="label">Resfriamento de Água</span><span class="go">ABRIR →</span></a>
+      <a href="cicloterralua/" class="card-jogo"><span class="icon">🌗</span><span class="label">Ciclo Terra/Lua</span><span class="go">ABRIR →</span></a>
+      <a href="encontrocarros/" class="card-jogo"><span class="icon">🚗🚙</span><span class="label">Encontro entre dois Carros</span><span class="go">ABRIR →</span></a>
+      <a href="trajetoria/" class="card-jogo"><span class="icon">🏹</span><span class="label">Trajetória de um Lançamento Horizontal</span><span class="go">ABRIR →</span></a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="courses-label">Faça parte da Família Fatec Campinas</div>
+    <p>Venha fazer parte da <strong>Família Fatec Campinas</strong>, faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística.</p>
+  </footer>
+
 </body>
 </html>
