@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Função do 2º Grau — Fatec Campinas</title>
+<title>Simulador de Função do 3º Grau — Fatec Campinas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
@@ -18,6 +18,7 @@
     --yellow: #ffd166;
     --green: #6ee7a0;
     --pink: #ff6fa3;
+    --purple: #b48cff;
     --paper: #eef4fa;
     --muted: #7fa0bd;
     --border: rgba(120,170,220,0.35);
@@ -117,11 +118,11 @@
   }
   .coef-grid{
     display:grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
   }
-  @media (max-width: 480px){
-    .coef-grid{ grid-template-columns: 1fr; }
+  @media (max-width: 560px){
+    .coef-grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
   .equation-box{
@@ -135,6 +136,7 @@
     color: var(--green);
     text-align:center;
     letter-spacing: .5px;
+    word-break: break-word;
   }
 
   .actions{ display:flex; gap:10px; margin-top: 6px; }
@@ -177,11 +179,12 @@
   .info-list{ font-size:.85rem; }
   .info-row{
     display:flex; justify-content:space-between;
+    gap: 10px;
     padding: 6px 0;
     border-bottom: 1px dashed var(--border);
     font-family:'JetBrains Mono', monospace;
   }
-  .info-row span:first-child{ color:var(--muted); }
+  .info-row span:first-child{ color:var(--muted); flex-shrink:0; }
   .info-row span:last-child{ color: var(--paper); font-weight:500; text-align:right; }
 
   .graph-wrap{
@@ -232,7 +235,7 @@
 
 <header class="top">
   <h1>Bem vindos ao Portas Abertas da Fatec Campinas</h1>
-  <p>Simulador de Função do 2º Grau · ADS — Análise e Desenvolvimento de Sistemas</p>
+  <p>Simulador de Função do 3º Grau · ADS — Análise e Desenvolvimento de Sistemas</p>
 </header>
 
 <main>
@@ -244,7 +247,7 @@
   <section class="panel">
     <h2>Coeficientes</h2>
 
-    <div class="equation-box" id="equationBox">f(x) = 1x² + 0x + 0</div>
+    <div class="equation-box" id="equationBox">f(x) = 1x³ + 0x² + 0x + 0</div>
 
     <div class="coef-grid">
       <div class="field">
@@ -259,6 +262,10 @@
         <label for="inputC">c</label>
         <input type="number" id="inputC" value="0" step="0.5">
       </div>
+      <div class="field">
+        <label for="inputD">d</label>
+        <input type="number" id="inputD" value="0" step="0.5">
+      </div>
     </div>
 
     <div class="actions">
@@ -270,7 +277,7 @@
   <section class="panel graph-wrap">
     <h2>Gráfico</h2>
     <canvas id="graphCanvas"></canvas>
-    <p class="graph-caption">A parábola é desenhada bem lentamente para você acompanhar sua formação, ponto a ponto.</p>
+    <p class="graph-caption">A curva é desenhada bem lentamente para você acompanhar sua formação, ponto a ponto.</p>
   </section>
 
   <section class="panel">
@@ -291,27 +298,29 @@
   const inputA = document.getElementById('inputA');
   const inputB = document.getElementById('inputB');
   const inputC = document.getElementById('inputC');
+  const inputD = document.getElementById('inputD');
   const equationBox = document.getElementById('equationBox');
   const infoList = document.getElementById('infoList');
   const hintList = document.getElementById('hintList');
   const btnPlot = document.getElementById('btnPlot');
   const btnClear = document.getElementById('btnClear');
 
-  const X_MIN = -10, X_MAX = 10; // faixa fixa do eixo X
-  const SAMPLES = 240;           // pontos usados para desenhar a curva
-  const ANIM_DURATION = 8500;    // ms — plotagem bem lenta
+  let X_MIN = -10, X_MAX = 10;      // faixa do eixo X exibida (recalculada a cada plotagem)
+  const SCAN_MIN = -15, SCAN_MAX = 15; // faixa usada para buscar raízes reais
+  const SAMPLES = 260;              // pontos usados para desenhar a curva
+  const ANIM_DURATION = 9000;       // ms — plotagem bem lenta
 
   let animId = null;
   let currentCoefs = null;
   let yRange = [-10, 10];
 
   const hints = [
-    { a: 1, b: -3, c: 2, desc: '.' },
-    { a: 1, b: -4, c: 4, desc: '.' },
-    { a: 1, b: 0, c: 4, desc: '.' },
-    { a: -1, b: 4, c: -3, desc: '.' },
-    { a: 1, b: 0, c: 0, desc: '.' },
-    { a: 0.5, b: -2, c: -1, desc: '.' }
+    { a: 1, b: -2, c: -1, d: 2, desc: '.' },
+    { a: 1, b: -3, c: 3, d: -1, desc: '.' },
+    { a: 1, b: 0, c: 1, d: 0, desc: '.' },
+    { a: -1, b: 0, c: 4, d: 0, desc: '.' },
+    { a: 1, b: -3, c: 0, d: 2, desc: '.' },
+    { a: 0.5, b: 0, c: 0, d: 0, desc: '.' }
   ];
 
   function buildHints(){
@@ -319,11 +328,12 @@
     hints.forEach(h => {
       const chip = document.createElement('div');
       chip.className = 'hint-chip';
-      chip.innerHTML = `<strong>a=${h.a}, b=${h.b}, c=${h.c}</strong><span class="desc">${h.desc}</span>`;
+      chip.innerHTML = `<strong>a=${h.a}, b=${h.b}, c=${h.c}, d=${h.d}</strong><span class="desc">${h.desc}</span>`;
       chip.addEventListener('click', () => {
         inputA.value = h.a;
         inputB.value = h.b;
         inputC.value = h.c;
+        inputD.value = h.d;
         updateEquation();
         plot();
       });
@@ -331,7 +341,7 @@
     });
   }
 
-  function f(x, a, b, c){ return a * x * x + b * x + c; }
+  function f(x, a, b, c, d){ return a * x * x * x + b * x * x + c * x + d; }
 
   function niceStep(range){
     const raw = range / 8;
@@ -345,11 +355,90 @@
     return step * mag;
   }
 
-  function computeYRange(a, b, c){
-    const candidates = [f(X_MIN, a, b, c), f(X_MAX, a, b, c), c, 0];
-    if (a !== 0){
-      const vx = -b / (2 * a);
-      if (vx >= X_MIN && vx <= X_MAX) candidates.push(f(vx, a, b, c));
+  // pontos críticos (máximo/mínimo local) via derivada 3ax² + 2bx + c = 0
+  function criticalPoints(a, b, c){
+    if (a === 0) return [];
+    const A = 3 * a, B = 2 * b, C = c;
+    const disc = B * B - 4 * A * C;
+    if (disc < 0) return [];
+    if (disc === 0) return [-B / (2 * A)];
+    const sq = Math.sqrt(disc);
+    return [(-B + sq) / (2 * A), (-B - sq) / (2 * A)].sort((x, y) => x - y);
+  }
+
+  // busca de raízes reais por varredura + bisseção (robusto para qualquer coeficiente)
+  function findRealRoots(a, b, c, d){
+    if (a === 0) return [];
+    const N = 3000;
+    const step = (SCAN_MAX - SCAN_MIN) / N;
+    const found = [];
+    let prevX = SCAN_MIN, prevY = f(prevX, a, b, c, d);
+    for (let i = 1; i <= N; i++){
+      const x = SCAN_MIN + step * i;
+      const y = f(x, a, b, c, d);
+      if (Math.abs(prevY) < 1e-9){
+        found.push(prevX);
+      } else if (prevY * y < 0){
+        let xa = prevX, xb = x, ya = prevY;
+        for (let iter = 0; iter < 60; iter++){
+          const xm = (xa + xb) / 2;
+          const ym = f(xm, a, b, c, d);
+          if (ya * ym <= 0){ xb = xm; } else { xa = xm; ya = ym; }
+        }
+        found.push((xa + xb) / 2);
+      }
+      prevX = x; prevY = y;
+    }
+    const filtered = [];
+    found.forEach(r => {
+      if (!filtered.some(r2 => Math.abs(r2 - r) < 1e-3)) filtered.push(r);
+    });
+    return filtered.sort((x, y) => x - y);
+  }
+
+  // "núcleo" do que há de interessante na curva: raízes, pontos críticos e
+  // inflexão. É a partir dele — e não das pontas do eixo X — que escolhemos
+  // a escala vertical, para o "S" da cúbica ficar bem definido mesmo que o
+  // valor de x³ nas extremidades seja enorme (a curva simplesmente sai da
+  // tela por cima/por baixo nessas pontas, como num gráfico do Desmos/GeoGebra)
+  function computeCoreX(a, b, c, d){
+    const roots = findRealRoots(a, b, c, d);
+    const crits = criticalPoints(a, b, c);
+    const infl = a !== 0 ? -b / (3 * a) : 0;
+    let xs = [0, infl, ...roots, ...crits].filter(x => isFinite(x));
+    if (xs.length === 0) xs = [0];
+
+    let xMin = Math.min(...xs);
+    let xMax = Math.max(...xs);
+    if (xMax - xMin < 4){
+      const mid = (xMax + xMin) / 2;
+      xMin = mid - 2; xMax = mid + 2;
+    }
+    return [xMin, xMax];
+  }
+
+  // faixa exibida no eixo X: o núcleo com uma margem, só para dar contexto
+  function computeDisplayXRange(coreMin, coreMax){
+    const pad = (coreMax - coreMin) * 0.35;
+    let xMin = coreMin - pad;
+    let xMax = coreMax + pad;
+    xMin = Math.max(xMin, -25);
+    xMax = Math.min(xMax, 25);
+    return [xMin, xMax];
+  }
+
+  // escala vertical baseada nos pontos críticos (máx./mín. local) dentro do
+  // núcleo — não nos valores extremos do eixo X, que é o que antes esmagava o S
+  function computeYRange(a, b, c, d, coreMin, coreMax){
+    const crits = criticalPoints(a, b, c).filter(x => x >= coreMin && x <= coreMax);
+    let candidates;
+    if (crits.length > 0){
+      candidates = crits.map(x => f(x, a, b, c, d));
+      candidates.push(d, 0);
+    } else {
+      // função monótona no núcleo: não há máx./mín. local para ancorar a escala,
+      // usa os valores nas bordas do próprio núcleo (bem mais estreito que o eixo X exibido)
+      candidates = [f(coreMin, a, b, c, d), f(coreMax, a, b, c, d), d, 0];
     }
     let yMin = Math.min(...candidates);
     let yMax = Math.max(...candidates);
@@ -357,7 +446,7 @@
       const mid = (yMax + yMin) / 2;
       yMin = mid - 4; yMax = mid + 4;
     }
-    const pad = (yMax - yMin) * 0.18;
+    const pad = (yMax - yMin) * 0.25;
     return [yMin - pad, yMax + pad];
   }
 
@@ -368,7 +457,7 @@
     canvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawAxes();
-    if (currentCoefs) drawStaticCurve(currentCoefs.a, currentCoefs.b, currentCoefs.c);
+    if (currentCoefs) drawStaticCurve(currentCoefs.a, currentCoefs.b, currentCoefs.c, currentCoefs.d);
   }
 
   function toPixel(x, y){
@@ -384,7 +473,7 @@
     const h = canvas.clientHeight;
     ctx.clearRect(0, 0, w, h);
 
-    const stepX = 2;
+    const stepX = niceStep(X_MAX - X_MIN);
     const stepY = niceStep(yRange[1] - yRange[0]);
 
     ctx.strokeStyle = 'rgba(120,170,220,0.15)';
@@ -399,7 +488,6 @@
       ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
     }
 
-    // eixos principais (se dentro da faixa visível)
     ctx.strokeStyle = 'rgba(150,200,255,0.55)';
     ctx.lineWidth = 1.6;
     if (yRange[0] <= 0 && yRange[1] >= 0){
@@ -424,37 +512,40 @@
     }
   }
 
-  function curvePoints(a, b, c){
+  function curvePoints(a, b, c, d){
     const pts = [];
     for (let i = 0; i <= SAMPLES; i++){
       const x = X_MIN + (X_MAX - X_MIN) * (i / SAMPLES);
-      pts.push([x, f(x, a, b, c)]);
+      pts.push([x, f(x, a, b, c, d)]);
     }
     return pts;
   }
 
-  function drawKeyPoints(a, b, c){
-    const [pyx, pyy] = toPixel(0, c);
+  function drawKeyPoints(a, b, c, d){
+    const [pyx, pyy] = toPixel(0, d);
     drawDot(pyx, pyy, '#ffd166');
 
-    if (a !== 0){
-      const delta = b * b - 4 * a * c;
-      const vx = -b / (2 * a);
-      const vy = f(vx, a, b, c);
-      const [vpx, vpy] = toPixel(vx, vy);
-      drawDot(vpx, vpy, '#ff6fa3');
-
-      if (delta > 0){
-        const r1 = (-b + Math.sqrt(delta)) / (2 * a);
-        const r2 = (-b - Math.sqrt(delta)) / (2 * a);
-        [r1, r2].forEach(r => {
-          const [rpx, rpy] = toPixel(r, 0);
-          drawDot(rpx, rpy, '#6ee7a0');
-        });
-      } else if (delta === 0){
-        const r = -b / (2 * a);
+    findRealRoots(a, b, c, d).forEach(r => {
+      if (r >= X_MIN && r <= X_MAX){
         const [rpx, rpy] = toPixel(r, 0);
         drawDot(rpx, rpy, '#6ee7a0');
+      }
+    });
+
+    criticalPoints(a, b, c).forEach(x => {
+      if (x >= X_MIN && x <= X_MAX){
+        const y = f(x, a, b, c, d);
+        const [cpx, cpy] = toPixel(x, y);
+        drawDot(cpx, cpy, '#ff6fa3');
+      }
+    });
+
+    if (a !== 0){
+      const ix = -b / (3 * a);
+      if (ix >= X_MIN && ix <= X_MAX){
+        const iy = f(ix, a, b, c, d);
+        const [ipx, ipy] = toPixel(ix, iy);
+        drawDot(ipx, ipy, '#b48cff');
       }
     }
   }
@@ -469,9 +560,9 @@
     ctx.stroke();
   }
 
-  function drawStaticCurve(a, b, c){
+  function drawStaticCurve(a, b, c, d){
     drawAxes();
-    const pts = curvePoints(a, b, c);
+    const pts = curvePoints(a, b, c, d);
     ctx.strokeStyle = '#ff9d3f';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -480,18 +571,18 @@
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     });
     ctx.stroke();
-    drawKeyPoints(a, b, c);
+    drawKeyPoints(a, b, c, d);
   }
 
   function easeInOutQuad(t){
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  function animateCurve(a, b, c, duration){
+  function animateCurve(a, b, c, d, duration){
     if (animId) cancelAnimationFrame(animId);
     currentCoefs = null;
 
-    const pts = curvePoints(a, b, c);
+    const pts = curvePoints(a, b, c, d);
     const pixelPts = pts.map(([x, y]) => toPixel(x, y));
     const start = performance.now();
 
@@ -527,71 +618,83 @@
       if (t < 1){
         animId = requestAnimationFrame(frame);
       } else {
-        currentCoefs = { a, b, c };
-        drawStaticCurve(a, b, c);
+        currentCoefs = { a, b, c, d };
+        drawStaticCurve(a, b, c, d);
       }
     }
     animId = requestAnimationFrame(frame);
   }
 
   function fmtNum(n){
-    return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
+    if (!isFinite(n)) return '—';
+    return Number.isInteger(n) ? String(n) : (Math.round(n * 100) / 100).toString();
   }
 
   function updateEquation(){
     const a = parseFloat(inputA.value) || 0;
     const b = parseFloat(inputB.value) || 0;
     const c = parseFloat(inputC.value) || 0;
-    let text = 'f(x) = ';
+    const d = parseFloat(inputD.value) || 0;
     const parts = [];
 
     if (a !== 0){
-      if (a === 1) parts.push('x²');
-      else if (a === -1) parts.push('-x²');
-      else parts.push(`${fmtNum(a)}x²`);
+      if (a === 1) parts.push('x³');
+      else if (a === -1) parts.push('-x³');
+      else parts.push(`${fmtNum(a)}x³`);
     }
     if (b !== 0){
       const sign = b > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
       const abs = Math.abs(b);
+      parts.push(sign + (abs === 1 ? 'x²' : `${fmtNum(abs)}x²`));
+    }
+    if (c !== 0){
+      const sign = c > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
+      const abs = Math.abs(c);
       parts.push(sign + (abs === 1 ? 'x' : `${fmtNum(abs)}x`));
     }
-    if (c !== 0 || parts.length === 0){
-      const sign = c > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
-      parts.push(sign + fmtNum(Math.abs(c)));
+    if (d !== 0 || parts.length === 0){
+      const sign = d > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
+      parts.push(sign + fmtNum(Math.abs(d)));
     }
-    text += parts.join('') || '0';
-    equationBox.textContent = text;
+    equationBox.textContent = 'f(x) = ' + (parts.join('') || '0');
   }
 
-  function updateInfo(a, b, c){
+  function updateInfo(a, b, c, d){
     if (a === 0){
       infoList.innerHTML = `
-        <div class="info-row"><span>Atenção</span><span>a = 0 → não é função do 2º grau (vira 1º grau ou constante)</span></div>
+        <div class="info-row"><span>Atenção</span><span>a = 0 → não é função do 3º grau</span></div>
       `;
       return;
     }
-    const delta = b * b - 4 * a * c;
-    const vx = -b / (2 * a);
-    const vy = f(vx, a, b, c);
-    const concavidade = a > 0 ? 'Para cima (ponto de mínimo)' : 'Para baixo (ponto de máximo)';
+    const roots = findRealRoots(a, b, c, d);
+    const raizesTxt = roots.length ? roots.map(fmtNum).join(', ') : 'nenhuma raiz real encontrada na faixa analisada';
 
-    let raizesTxt;
-    if (delta > 0){
-      const r1 = (-b + Math.sqrt(delta)) / (2 * a);
-      const r2 = (-b - Math.sqrt(delta)) / (2 * a);
-      raizesTxt = `${fmtNum(r1)} e ${fmtNum(r2)}`;
-    } else if (delta === 0){
-      raizesTxt = `${fmtNum(-b / (2 * a))} (raiz dupla)`;
+    const crit = criticalPoints(a, b, c);
+    let critTxt;
+    if (crit.length === 0){
+      critTxt = 'nenhum (função monótona)';
+    } else if (crit.length === 1){
+      critTxt = `x = ${fmtNum(crit[0])} (tangente horizontal)`;
     } else {
-      raizesTxt = 'não possui (Δ < 0)';
+      const y1 = f(crit[0], a, b, c, d), y2 = f(crit[1], a, b, c, d);
+      const [xMaxC, yMaxC] = y1 > y2 ? [crit[0], y1] : [crit[1], y2];
+      const [xMinC, yMinC] = y1 > y2 ? [crit[1], y2] : [crit[0], y1];
+      critTxt = `máximo local (${fmtNum(xMaxC)}, ${fmtNum(yMaxC)}) · mínimo local (${fmtNum(xMinC)}, ${fmtNum(yMinC)})`;
     }
 
+    const ix = -b / (3 * a);
+    const iy = f(ix, a, b, c, d);
+
+    const comportamento = a > 0
+      ? 'vem de -∞ e vai para +∞ (tendência geral crescente)'
+      : 'vem de +∞ e vai para -∞ (tendência geral decrescente)';
+
     infoList.innerHTML = `
-      <div class="info-row"><span>Concavidade</span><span>${concavidade}</span></div>
-      <div class="info-row"><span>Discriminante (Δ)</span><span>${fmtNum(delta)}</span></div>
-      <div class="info-row"><span>Raízes</span><span>${raizesTxt}</span></div>
-      <div class="info-row"><span>Vértice</span><span>(${fmtNum(vx)}, ${fmtNum(vy)})</span></div>
-      <div class="info-row"><span>Corta eixo Y em</span><span>(0, ${fmtNum(c)})</span></div>
+      <div class="info-row"><span>Comportamento nos extremos</span><span>${comportamento}</span></div>
+      <div class="info-row"><span>Raízes reais</span><span>${raizesTxt}</span></div>
+      <div class="info-row"><span>Pontos críticos</span><span>${critTxt}</span></div>
+      <div class="info-row"><span>Ponto de inflexão</span><span>(${fmtNum(ix)}, ${fmtNum(iy)})</span></div>
+      <div class="info-row"><span>Corta eixo Y em</span><span>(0, ${fmtNum(d)})</span></div>
     `;
   }
 
@@ -599,30 +702,40 @@
     const a = parseFloat(inputA.value);
     const b = parseFloat(inputB.value);
     const c = parseFloat(inputC.value);
-    if (isNaN(a) || isNaN(b) || isNaN(c)){
-      alert('Digite valores numéricos válidos para a, b e c.');
+    const d = parseFloat(inputD.value);
+    if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d)){
+      alert('Digite valores numéricos válidos para a, b, c e d.');
       return;
     }
     if (a === 0){
-      alert('Com a = 0 a função deixa de ser do 2º grau. Escolha um valor diferente de 0 para "a".');
+      alert('Com a = 0 a função deixa de ser do 3º grau. Escolha um valor diferente de 0 para "a".');
     }
-    if (Math.abs(a) > 10 || Math.abs(b) > 10 || Math.abs(c) > 10){
-      alert('Para melhor visualização, prefira valores entre -10 e 10.');
+    if (Math.abs(a) > 5 || Math.abs(b) > 10 || Math.abs(c) > 10 || Math.abs(d) > 10){
+      alert('Para melhor visualização, prefira valores menores (ex: a entre -5 e 5, os demais entre -10 e 10).');
     }
     updateEquation();
-    updateInfo(a, b, c);
-    yRange = computeYRange(a, b, c);
-    animateCurve(a, b, c, ANIM_DURATION);
+    updateInfo(a, b, c, d);
+    const [coreMin, coreMax] = computeCoreX(a, b, c, d);
+    [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
+    yRange = computeYRange(a, b, c, d, coreMin, coreMax);
+    animateCurve(a, b, c, d, ANIM_DURATION);
   }
 
   btnPlot.addEventListener('click', plot);
   inputA.addEventListener('input', updateEquation);
   inputB.addEventListener('input', updateEquation);
   inputC.addEventListener('input', updateEquation);
+  inputD.addEventListener('input', updateEquation);
+  function resetView(){
+    const [coreMin, coreMax] = computeCoreX(1, 0, 0, 0);
+    [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
+    yRange = computeYRange(1, 0, 0, 0, coreMin, coreMax);
+  }
+
   btnClear.addEventListener('click', () => {
     if (animId) cancelAnimationFrame(animId);
     currentCoefs = null;
-    yRange = [-10, 10];
+    resetView();
     drawAxes();
     infoList.innerHTML = '';
   });
@@ -631,6 +744,7 @@
 
   buildHints();
   updateEquation();
+  resetView();
   resizeCanvas();
 })();
 </script>
