@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resfriamento da Água Fervendo</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f3ef;
+    color: #1a1a19;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e1e0d9;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b6a65;
+    margin: 0 0 18px;
+    line-height: 1.5;
+  }
+  #scenario-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 8px;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  #scenario-box .item .label { font-size: 11px; color: #6b6a65; margin-bottom: 2px; }
+  #scenario-box .item .value { font-size: 15px; font-weight: 600; color: #52514e; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  .actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #plot-btn { background: #378ADD; color: #fff; }
+  #plot-btn:hover { background: #185fa5; }
+  #reset-btn { background: #eceae2; color: #1a1a19; }
+  #reset-btn:hover { background: #d3d1c7; }
+  #live-info {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 20px;
+    margin-bottom: 8px;
+  }
+  #plot-wrap {
+    width: 100%;
+    background: #fbfbfa;
+    border: 1px solid #e1e0d9;
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  #result-box {
+    display: none;
+    background: #f4f3ef;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #3d3d3a;
+    line-height: 1.6;
+  }
+  #result-box div { margin-bottom: 4px; }
+  #result-box div:last-child { margin-bottom: 0; }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #9a998f;
+    margin-top: 18px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Resfriamento da água fervendo</h1>
+  <p class="subtitle">Água a 100°C esfriando bem devagar até a temperatura ambiente, com o gráfico de temperatura em destaque. A xícara muda de cor conforme esfria: vermelho quando está quente, azul quando esfria.</p>
+
+  <div id="scenario-box">
+    <div class="item">
+      <div class="label">Temp. inicial</div>
+      <div class="value">100°C</div>
+    </div>
+    <div class="item">
+      <div class="label">Temp. ambiente</div>
+      <div class="value">20°C</div>
+    </div>
+    <div class="item">
+      <div class="label">Tempo simulado</div>
+      <div class="value">120 min</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="plot-btn">▶ Iniciar resfriamento</button>
+    <button id="reset-btn">↻ Repetir</button>
+  </div>
+
+  <div id="live-info"></div>
+
+  <div id="plot-wrap">
+    <svg id="plot" viewBox="0 0 340 480" role="img">
+      <title>Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque</title>
+    </svg>
+  </div>
+
+  <div id="result-box"></div>
+
+  <footer>Lei do Resfriamento de Newton — T(t) = T_amb + (T₀ − T_amb)·e^(−kt)</footer>
+</div>
+
+<script>
+(function(){
+  var plotBtn = document.getElementById('plot-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var liveInfo = document.getElementById('live-info');
+  var svg = document.getElementById('plot');
+  var resultBox = document.getElementById('result-box');
+
+  var T0 = 100, TAMB = 20, K = 0.015;
+  var TEND = 120;
+  var animating = false;
+
+  var W = 340, H = 480, ML = 40, MR = 15;
+  var PW = W - ML - MR;
+  var cupCx = 170, cupTop = 40, cupBottom = 115, cupHalfW = 30;
+  var chartTop = 175, chartBottom = 460;
+  var PH = chartBottom - chartTop;
+  var N = 150;
+
+  var HOT = [226, 75, 74];
+  var COLD = [55, 138, 221];
+
+  function fmt(n){
+    var r = Math.round(n * 10) / 10;
+    return r.toFixed(1).replace('.', ',');
+  }
+  function fmt0(n){ return Math.round(n).toString(); }
+
+  function temp(t){ return TAMB + (T0 - TAMB) * Math.exp(-K * t); }
+
+  function colorFor(T){
+    var frac = (T - TAMB) / (T0 - TAMB);
+    frac = Math.max(0, Math.min(1, frac));
+    var r = Math.round(COLD[0] + (HOT[0]-COLD[0])*frac);
+    var g = Math.round(COLD[1] + (HOT[1]-COLD[1])*frac);
+    var b = Math.round(COLD[2] + (HOT[2]-COLD[2])*frac);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function clearSvg(){
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
+    t.textContent = 'Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque';
+    svg.appendChild(t);
+  }
+
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function pxChart(t){ return ML + (t / TEND) * PW; }
+
+  function runPlot(){
+    if(animating) return;
+    animating = true;
+    resultBox.style.display = 'none';
+    liveInfo.textContent = '';
+    clearSvg();
+
+    var defs = svgEl('defs', {});
+    var grad = svgEl('linearGradient', {id:'tempGrad', gradientUnits:'userSpaceOnUse', x1:pxChart(0), y1:0, x2:pxChart(TEND), y2:0});
+    grad.appendChild(svgEl('stop', {offset:'0%', 'stop-color':'rgb(' + HOT.join(',') + ')'}));
+    grad.appendChild(svgEl('stop', {offset:'55%', 'stop-color':'#9a5aa8'}));
+    grad.appendChild(svgEl('stop', {offset:'100%', 'stop-color':'rgb(' + COLD.join(',') + ')'}));
+    defs.appendChild(grad);
+    var chartClip = svgEl('clipPath', {id:'tempClip'});
+    var chartClipRect = svgEl('rect', {x:pxChart(0), y:chartTop, width:0, height:PH});
+    chartClip.appendChild(chartClipRect);
+    defs.appendChild(chartClip);
+    svg.appendChild(defs);
+
+    // Cup
+    var cupBody = svgEl('path', {
+      d: 'M ' + (cupCx-cupHalfW) + ' ' + cupTop + ' L ' + (cupCx-cupHalfW+6) + ' ' + cupBottom + ' Q ' + cupCx + ' ' + (cupBottom+8) + ' ' + (cupCx+cupHalfW-6) + ' ' + cupBottom + ' L ' + (cupCx+cupHalfW) + ' ' + cupTop + ' Z',
+      fill: colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5
+    });
+    svg.appendChild(cupBody);
+    svg.appendChild(svgEl('ellipse', {cx:cupCx, cy:cupTop, rx:cupHalfW, ry:6, fill:colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5, opacity:'0.9'}));
+    svg.appendChild(svgEl('path', {d:'M ' + (cupCx+cupHalfW-2) + ' ' + (cupTop+13) + ' q 15 5 15 20 q 0 15 -15 20', fill:'none', stroke:'#8a8a86', 'stroke-width':4}));
+
+    var steamPaths = [];
+    for(var sIdx=0; sIdx<3; sIdx++){
+      var sx = cupCx - 13 + sIdx*13;
+      var sp = svgEl('path', {d:'M ' + sx + ' ' + (cupTop-6) + ' q -5 -9 0 -18 q 5 -9 0 -18', fill:'none', stroke:'#ffffff', 'stroke-width':2, 'stroke-linecap':'round', opacity:'0'});
+      svg.appendChild(sp);
+      steamPaths.push(sp);
+    }
+
+    var tempLabel = svgEl('text', {x:cupCx, y:cupBottom+30, 'text-anchor':'middle', 'font-size':'20', 'font-weight':'600', fill:colorFor(T0)});
+    tempLabel.textContent = fmt0(T0) + '°C';
+    svg.appendChild(tempLabel);
+
+    // Chart (taller)
+    function py(v){ return chartBottom - (v - (TAMB-5)) / ((T0+5) - (TAMB-5)) * PH; }
+    var axesG = svgEl('g', {});
+    var xAxisY = py(TAMB-5);
+    axesG.appendChild(svgEl('line', {x1:ML, y1:xAxisY, x2:ML+PW, y2:xAxisY, stroke:'#b4b2a9', 'stroke-width':1}));
+    axesG.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
+    [0, 30, 60, 90, 120].forEach(function(v){
+      var lbl = svgEl('text', {x:pxChart(v), y:xAxisY+14, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
+      lbl.textContent = v + ' min';
+      axesG.appendChild(lbl);
+    });
+    [20, 40, 60, 80, 100].forEach(function(v){
+      var y = py(v);
+      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'10', fill:'#898781'});
+      lbl.textContent = v + '°C';
+      axesG.appendChild(lbl);
+      axesG.appendChild(svgEl('line', {x1:ML, y1:y, x2:ML+PW, y2:y, stroke:'#e1e0d9', 'stroke-width':1}));
+    });
+    svg.appendChild(axesG);
+
+    var ambLine = svgEl('line', {x1:ML, y1:py(TAMB), x2:ML+PW, y2:py(TAMB), stroke:'#b4b2a9', 'stroke-width':1, 'stroke-dasharray':'3,3'});
+    svg.appendChild(ambLine);
+
+    var pts = [];
+    for(var i=0;i<=N;i++){
+      var t = TEND * i / N;
+      pts.push([t, temp(t)]);
+    }
+    function pathFromPts(ptsArr){
+      var s = 'M ' + pxChart(ptsArr[0][0]) + ' ' + py(ptsArr[0][1]);
+      for(var j=1;j<ptsArr.length;j++){ s += ' L ' + pxChart(ptsArr[j][0]) + ' ' + py(ptsArr[j][1]); }
+      return s;
+    }
+    var chartGroup = svgEl('g', {'clip-path':'url(#tempClip)'});
+    svg.appendChild(chartGroup);
+    var path = svgEl('path', {d: pathFromPts(pts), fill:'none', stroke:'url(#tempGrad)', 'stroke-width':3.2, 'stroke-linecap':'round'});
+    chartGroup.appendChild(path);
+
+    var dot = svgEl('circle', {r:5, fill:colorFor(T0), stroke:'#ffffff', 'stroke-width':2, cx:pxChart(0), cy:py(T0)});
+    svg.appendChild(dot);
+
+    var duration = 15000;
+    var start = null;
+
+    function step(ts){
+      if(!start) start = ts;
+      var elapsed = ts - start;
+      var frac = Math.min(elapsed / duration, 1);
+      var curT = frac * TEND;
+      var curTemp = temp(curT);
+      var col = colorFor(curTemp);
+
+      chartClipRect.setAttribute('width', Math.max(0, pxChart(curT) - pxChart(0)));
+      dot.setAttribute('cx', pxChart(curT));
+      dot.setAttribute('cy', py(curTemp));
+      dot.setAttribute('fill', col);
+
+      cupBody.setAttribute('fill', col);
+      tempLabel.setAttribute('fill', col);
+      tempLabel.textContent = fmt0(curTemp) + '°C';
+
+      var steamOpacity = Math.max(0, (curTemp - TAMB - 15) / (T0 - TAMB - 15));
+      steamPaths.forEach(function(sp){ sp.setAttribute('opacity', (steamOpacity*0.85).toFixed(2)); });
+
+      liveInfo.style.color = col;
+      liveInfo.textContent = 't = ' + fmt(curT) + ' min   temperatura: ' + fmt(curTemp) + ' °C';
+
+      if(frac < 1){
+        requestAnimationFrame(step);
+      } else {
+        finishPlot();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finishPlot(){
+    animating = false;
+    liveInfo.textContent = '';
+
+    var halfLifeLike = Math.log(2) / K;
+    var infoLines = [];
+    infoLines.push('Com uma taxa de resfriamento bem menor (k = ' + K + '), a água demora muito mais para perder calor.');
+    infoLines.push('Em ' + fmt0(TEND) + ' minutos (2 horas simuladas), a água ainda está a ' + fmt(temp(TEND)) + '°C — bem mais quente do que ficaria com um resfriamento rápido.');
+    infoLines.push('A diferença de temperatura só cai pela metade a cada ' + fmt(halfLifeLike) + ' minutos — quase 46 minutos, contra os 14 minutos da simulação anterior.');
+    infoLines.push('O gráfico mais alto deixa mais fácil enxergar cada faixa de 20°C separadamente, já que a curva ocupa mais espaço vertical.');
+
+    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
+    resultBox.style.display = 'block';
+  }
+
+  plotBtn.addEventListener('click', runPlot);
+
+  resetBtn.addEventListener('click', function(){
+    animating = false;
+    liveInfo.textContent = '';
+    resultBox.style.display = 'none';
+    clearSvg();
+  });
+})();
+</script>
+</body>
+</html>
