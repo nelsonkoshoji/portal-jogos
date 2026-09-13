@@ -19,18 +19,35 @@
   }
   *{ box-sizing: border-box; }
   html,body{
-    margin:0; padding:0; height:100%;
+    margin:0; padding:0; min-height:100%;
     background:
       radial-gradient(circle at 50% -10%, #10262f 0%, var(--bg) 55%),
       var(--bg);
     color: var(--text);
     font-family: 'Courier New', ui-monospace, Menlo, Consolas, monospace;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
   }
   .terminal-noise{
     position:fixed; inset:0; pointer-events:none; opacity:0.04;
     background: repeating-linear-gradient(0deg, #fff 0px, transparent 1px, transparent 2px);
+  }
+  .site-header{
+    width:100%;
+    text-align:center;
+    padding: 20px 16px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 10px rgba(57,255,136,0.5);
+  }
+  .conteudo{
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    padding: 24px 16px;
+    width:100%;
   }
   .wrap{
     width: min(560px, 94vw);
@@ -142,15 +159,37 @@
   }
   button:hover{ background: var(--accent); color:#04140c; box-shadow:0 0 16px rgba(57,255,136,0.6); }
 
-  footer{
+  footer.jogo-footer{
     margin-top: 12px; text-align:center; font-size:0.7rem; color: var(--muted);
   }
   .legend{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:10px; font-size:0.7rem; color: var(--muted); }
   .legend span{ display:inline-flex; align-items:center; gap:5px; }
+
+  .site-footer{
+    width:100%;
+    text-align:center;
+    padding: 18px 16px 24px;
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid var(--accent-dim);
+    color: var(--text);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .site-footer strong{
+    display:block;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(57,255,136,0.4);
+  }
 </style>
 </head>
 <body>
 <div class="terminal-noise"></div>
+
+<div class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</div>
+
+<div class="conteudo">
 <div class="wrap">
   <header>
     <div class="title"><span class="prompt">root@fatec:~$</span> cata-bugs<span class="cursor"></span></div>
@@ -184,8 +223,14 @@
     <span>💀 vírus −15</span>
   </div>
 
-  <footer>Fatec Campinas · Portas Abertas — ADS</footer>
+  <footer class="jogo-footer">Fatec Campinas · Portas Abertas — ADS</footer>
 </div>
+</div>
+
+<footer class="site-footer">
+  <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+  Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+</footer>
 
 <script>
 (function(){

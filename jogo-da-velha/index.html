@@ -17,8 +17,26 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
+        }
+        .site-header {
+            width: 100%;
+            text-align: center;
+            padding: 22px 16px;
+            background-color: #1e293b;
+            border-bottom: 1px solid #334155;
+            color: #38bdf8;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .conteudo {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
         }
         .container {
             text-align: center;
@@ -125,10 +143,29 @@
         .score span b {
             color: #f8fafc;
         }
+        .site-footer {
+            width: 100%;
+            text-align: center;
+            padding: 18px 16px 26px;
+            background-color: #1e293b;
+            border-top: 1px solid #334155;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .site-footer strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1rem;
+            color: #38bdf8;
+        }
     </style>
 </head>
 <body>
 
+    <header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+    <div class="conteudo">
     <div class="container">
         <h1>❌ Jogo da Velha ⭕</h1>
         <div id="status">Vez do jogador: X</div>
@@ -173,6 +210,12 @@
         </div>
 
     </div>
+    </div>
+
+    <footer class="site-footer">
+        <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+        Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+    </footer>
 
     <script>
         const boardEl = document.getElementById('board');

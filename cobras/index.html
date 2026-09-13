@@ -41,7 +41,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 0 0 0;
+  }
+
+  .site-header {
+    width: 100%;
+    text-align: center;
+    padding: 20px 16px;
+    background: rgba(7, 21, 38, 0.75);
+    border-bottom: 1px solid var(--grid-line-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--cyan-bright);
+    letter-spacing: 0.03em;
+    text-shadow: 0 0 12px rgba(94, 231, 255, 0.4);
+  }
+
+  .page-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 18px 14px 40px;
+    width: 100%;
   }
 
   .brand-row {
@@ -258,7 +280,7 @@
   .dpad .right { grid-column: 3; grid-row: 2; }
   .dpad .down { grid-column: 2; grid-row: 3; }
 
-  footer {
+  footer.jogo-footer {
     margin-top: 30px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -268,12 +290,37 @@
     text-align: center;
   }
 
+  .site-footer {
+    width: 100%;
+    text-align: center;
+    padding: 18px 16px 26px;
+    background: rgba(7, 21, 38, 0.75);
+    border-top: 1px solid var(--grid-line-strong);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--paper-dim);
+    line-height: 1.55;
+  }
+
+  .site-footer strong {
+    display: block;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--cyan-bright);
+    text-shadow: 0 0 10px rgba(94, 231, 255, 0.4);
+  }
+
   @media (hover: hover) {
     .dpad { display: none; }
   }
 </style>
 </head>
 <body>
+
+  <div class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</div>
+
+  <div class="page-body">
 
   <div class="brand-row">
     <span>ADS <span class="tag">/</span> Fatec Campinas</span>
@@ -336,7 +383,14 @@
 
   <p class="controls-hint">Teclado: setas / WASD &nbsp;·&nbsp; Celular: arraste na tela ou use os botões acima</p>
 
-  <footer>Fatec Campinas — Curso de ADS — Portas Abertas 2026</footer>
+  <footer class="jogo-footer">Fatec Campinas — Curso de ADS — Portas Abertas 2026</footer>
+
+  </div>
+
+  <footer class="site-footer">
+    <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+    Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+  </footer>
 
 <script>
 (function () {

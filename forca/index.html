@@ -23,8 +23,28 @@
     font-family:'Segoe UI', Roboto, Arial, sans-serif;
     background:linear-gradient(135deg, var(--bg1), var(--bg2));
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:0;
+  }
+  .site-header{
+    width:100%;
+    text-align:center;
+    padding:20px 16px;
+    background:rgba(0,0,0,0.25);
+    color:#fff;
+    font-size:1.35rem;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-shadow:0 2px 8px rgba(0,0,0,0.35);
+  }
+  .conteudo{
+    flex:1;
+    display:flex;
     align-items:center;
     justify-content:center;
+    width:100%;
     padding:20px;
   }
   .card{
@@ -181,6 +201,22 @@
   .btn-primary:hover{ filter:brightness(0.95); }
   [hidden]{ display:none !important; }
 
+  .site-footer{
+    width:100%;
+    text-align:center;
+    padding:18px 16px 24px;
+    background:rgba(0,0,0,0.25);
+    color:#e5e0ff;
+    font-size:0.9rem;
+    line-height:1.5;
+  }
+  .site-footer strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:1rem;
+    color:#ffffff;
+  }
+
   @media (max-width:480px){
     .word-display{ font-size:1.4rem; letter-spacing:6px; }
     .keyboard{ grid-template-columns:repeat(7, 1fr); }
@@ -189,6 +225,10 @@
 </style>
 </head>
 <body>
+
+  <header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+  <div class="conteudo">
   <div class="card">
     <h1>🎯 Jogo da Forca</h1>
     <p class="subtitle">Adivinhe a palavra letra por letra antes que o boneco seja enforcado!</p>
@@ -243,6 +283,12 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>Venha fazer parte da Família Fatec Campinas!</strong>
+    Faça sua inscrição em um de nossos cursos: Análise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da Tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+  </footer>
 
 <script>
 (function(){
