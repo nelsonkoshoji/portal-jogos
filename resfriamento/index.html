@@ -12,6 +12,22 @@
     background: #f4f3ef;
     color: #1a1a19;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header.site-header {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
+    text-align: center;
+    padding: 18px 16px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .page-body {
+    width: 100%;
+    display: flex;
     justify-content: center;
     padding: 24px 16px;
   }
@@ -94,18 +110,25 @@
   }
   #result-box div { margin-bottom: 4px; }
   #result-box div:last-child { margin-bottom: 0; }
-  footer {
+  footer.site-footer {
+    width: 100%;
+    background: #12294d;
+    color: #ffffff;
     text-align: center;
-    font-size: 11px;
-    color: #9a998f;
-    margin-top: 18px;
+    padding: 18px 20px;
+    font-size: 13px;
+    line-height: 1.6;
   }
 </style>
 </head>
 <body>
+
+<header class="site-header">Bem vindos ao Portas Abertas da Fatec Campinas</header>
+
+<div class="page-body">
 <div class="card">
   <h1>Resfriamento da água fervendo</h1>
-  <p class="subtitle">Água a 100°C esfriando bem devagar até a temperatura ambiente, com o gráfico de temperatura em destaque. A xícara muda de cor conforme esfria: vermelho quando está quente, azul quando esfria.</p>
+  <p class="subtitle">Água a 100°C esfriando bem devagar até a temperatura ambiente, com o eixo do gráfico esticado para destacar a curva exponencial. A xícara muda de cor conforme esfria: vermelho quando está quente, azul quando esfria.</p>
 
   <div id="scenario-box">
     <div class="item">
@@ -118,7 +141,7 @@
     </div>
     <div class="item">
       <div class="label">Tempo simulado</div>
-      <div class="value">120 min</div>
+      <div class="value">360 min</div>
     </div>
   </div>
 
@@ -130,15 +153,17 @@
   <div id="live-info"></div>
 
   <div id="plot-wrap">
-    <svg id="plot" viewBox="0 0 340 480" role="img">
-      <title>Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque</title>
+    <svg id="plot" viewBox="0 0 340 700" role="img">
+      <title>Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em escala ampliada</title>
     </svg>
   </div>
 
   <div id="result-box"></div>
 
-  <footer>Lei do Resfriamento de Newton — T(t) = T_amb + (T₀ − T_amb)·e^(−kt)</footer>
 </div>
+</div>
+
+<footer class="site-footer">Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística</footer>
 
 <script>
 (function(){
@@ -149,13 +174,13 @@
   var resultBox = document.getElementById('result-box');
 
   var T0 = 100, TAMB = 20, K = 0.015;
-  var TEND = 120;
+  var TEND = 360;
   var animating = false;
 
-  var W = 340, H = 480, ML = 40, MR = 15;
+  var W = 340, H = 700, ML = 40, MR = 15;
   var PW = W - ML - MR;
   var cupCx = 170, cupTop = 40, cupBottom = 115, cupHalfW = 30;
-  var chartTop = 175, chartBottom = 460;
+  var chartTop = 175, chartBottom = 680;
   var PH = chartBottom - chartTop;
   var N = 150;
 
@@ -182,7 +207,7 @@
   function clearSvg(){
     while(svg.lastChild) svg.removeChild(svg.lastChild);
     var t = document.createElementNS('http://www.w3.org/2000/svg','title');
-    t.textContent = 'Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque';
+    t.textContent = 'Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em escala ampliada';
     svg.appendChild(t);
   }
 
@@ -234,20 +259,20 @@
     tempLabel.textContent = fmt0(T0) + '°C';
     svg.appendChild(tempLabel);
 
-    // Chart (taller)
+    // Chart (y-axis stretched for a strong exponential feel)
     function py(v){ return chartBottom - (v - (TAMB-5)) / ((T0+5) - (TAMB-5)) * PH; }
     var axesG = svgEl('g', {});
     var xAxisY = py(TAMB-5);
     axesG.appendChild(svgEl('line', {x1:ML, y1:xAxisY, x2:ML+PW, y2:xAxisY, stroke:'#b4b2a9', 'stroke-width':1}));
     axesG.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
-    [0, 30, 60, 90, 120].forEach(function(v){
+    [0, 60, 120, 180, 240, 300, 360].forEach(function(v){
       var lbl = svgEl('text', {x:pxChart(v), y:xAxisY+14, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
       lbl.textContent = v + ' min';
       axesG.appendChild(lbl);
     });
-    [20, 40, 60, 80, 100].forEach(function(v){
+    [20, 30, 40, 50, 60, 70, 80, 90, 100].forEach(function(v){
       var y = py(v);
-      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'10', fill:'#898781'});
+      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'9', fill:'#898781'});
       lbl.textContent = v + '°C';
       axesG.appendChild(lbl);
       axesG.appendChild(svgEl('line', {x1:ML, y1:y, x2:ML+PW, y2:y, stroke:'#e1e0d9', 'stroke-width':1}));
@@ -269,7 +294,7 @@
     }
     var chartGroup = svgEl('g', {'clip-path':'url(#tempClip)'});
     svg.appendChild(chartGroup);
-    var path = svgEl('path', {d: pathFromPts(pts), fill:'none', stroke:'url(#tempGrad)', 'stroke-width':3.2, 'stroke-linecap':'round'});
+    var path = svgEl('path', {d: pathFromPts(pts), fill:'none', stroke:'url(#tempGrad)', 'stroke-width':3.4, 'stroke-linecap':'round'});
     chartGroup.appendChild(path);
 
     var dot = svgEl('circle', {r:5, fill:colorFor(T0), stroke:'#ffffff', 'stroke-width':2, cx:pxChart(0), cy:py(T0)});
@@ -316,10 +341,9 @@
 
     var halfLifeLike = Math.log(2) / K;
     var infoLines = [];
-    infoLines.push('Com uma taxa de resfriamento bem menor (k = ' + K + '), a água demora muito mais para perder calor.');
-    infoLines.push('Em ' + fmt0(TEND) + ' minutos (2 horas simuladas), a água ainda está a ' + fmt(temp(TEND)) + '°C — bem mais quente do que ficaria com um resfriamento rápido.');
-    infoLines.push('A diferença de temperatura só cai pela metade a cada ' + fmt(halfLifeLike) + ' minutos — quase 46 minutos, contra os 14 minutos da simulação anterior.');
-    infoLines.push('O gráfico mais alto deixa mais fácil enxergar cada faixa de 20°C separadamente, já que a curva ocupa mais espaço vertical.');
+    infoLines.push('Com o eixo Y esticado, cada grau ocupa mais espaço vertical — a queda inicial fica bem mais dramática, reforçando a "cara" de curva exponencial.');
+    infoLines.push('Com k = ' + K + ', a água esfria devagar: precisou de ' + fmt0(TEND) + ' minutos (6 horas simuladas) para chegar bem perto da temperatura ambiente, em ' + fmt(temp(TEND)) + '°C.');
+    infoLines.push('A diferença de temperatura cai pela metade a cada ' + fmt(halfLifeLike) + ' minutos — quase 46 minutos.');
 
     resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
     resultBox.style.display = 'block';
