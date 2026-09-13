@@ -1,339 +1,260 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resfriamento da Água Fervendo</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: #f4f3ef;
-    color: #1a1a19;
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px;
-  }
-  .card {
-    width: 100%;
-    max-width: 500px;
-    background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e1e0d9;
-    padding: 24px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-    text-align: center;
-    margin: 0 0 4px;
-  }
-  .subtitle {
-    text-align: center;
-    font-size: 13px;
-    color: #6b6a65;
-    margin: 0 0 18px;
-    line-height: 1.5;
-  }
-  #scenario-box {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0,1fr));
-    gap: 8px;
-    background: #f4f3ef;
-    border-radius: 10px;
-    padding: 14px 10px;
-    margin-bottom: 18px;
-    text-align: center;
-  }
-  #scenario-box .item .label { font-size: 11px; color: #6b6a65; margin-bottom: 2px; }
-  #scenario-box .item .value { font-size: 15px; font-weight: 600; color: #52514e; }
-  .actions {
-    display: flex;
-    gap: 10px;
-    margin: 0 0 14px;
-  }
-  .actions button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  #plot-btn { background: #378ADD; color: #fff; }
-  #plot-btn:hover { background: #185fa5; }
-  #reset-btn { background: #eceae2; color: #1a1a19; }
-  #reset-btn:hover { background: #d3d1c7; }
-  #live-info {
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    min-height: 20px;
-    margin-bottom: 8px;
-  }
-  #plot-wrap {
-    width: 100%;
-    background: #fbfbfa;
-    border: 1px solid #e1e0d9;
-    border-radius: 12px;
-    padding: 8px;
-    margin-bottom: 14px;
-  }
-  svg { width: 100%; height: auto; display: block; }
-  #result-box {
-    display: none;
-    background: #f4f3ef;
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-size: 14px;
-    color: #3d3d3a;
-    line-height: 1.6;
-  }
-  #result-box div { margin-bottom: 4px; }
-  #result-box div:last-child { margin-bottom: 0; }
-  footer {
-    text-align: center;
-    font-size: 11px;
-    color: #9a998f;
-    margin-top: 18px;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Função do 1º Grau - Fatec Campinas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f3f4f6;
+        }
+        main {
+            flex-grow: 1;
+        }
+        canvas {
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        .fatec-red {
+            background-color: #b91c1c; /* Vermelho escuro/Fatec style */
+        }
+        .fatec-text {
+            color: #b91c1c;
+        }
+    </style>
 </head>
-<body>
-<div class="card">
-  <h1>Resfriamento da água fervendo</h1>
-  <p class="subtitle">Água a 100°C esfriando bem devagar até a temperatura ambiente, com o gráfico de temperatura em destaque. A xícara muda de cor conforme esfria: vermelho quando está quente, azul quando esfria.</p>
+<body class="text-gray-800">
 
-  <div id="scenario-box">
-    <div class="item">
-      <div class="label">Temp. inicial</div>
-      <div class="value">100°C</div>
-    </div>
-    <div class="item">
-      <div class="label">Temp. ambiente</div>
-      <div class="value">20°C</div>
-    </div>
-    <div class="item">
-      <div class="label">Tempo simulado</div>
-      <div class="value">120 min</div>
-    </div>
-  </div>
+    <header class="fatec-red text-white py-6 shadow-md">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold uppercase tracking-wider">
+                Bem vindos ao Portas Abertas da Fatec Campinas
+            </h1>
+        </div>
+    </header>
 
-  <div class="actions">
-    <button id="plot-btn">▶ Iniciar resfriamento</button>
-    <button id="reset-btn">↻ Repetir</button>
-  </div>
+    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- Painel de Controles e Dicas -->
+        <aside class="w-full lg:w-1/3 bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-700">
+            <h2 class="text-xl font-bold mb-4 fatec-text">Simulador: f(x) = ax + b</h2>
+            <p class="text-sm text-gray-600 mb-6">Insira os coeficientes para visualizar o comportamento da reta no plano cartesiano.</p>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label for="coefA" class="block text-sm font-semibold mb-1">Coeficiente angular (a):</label>
+                    <input type="number" id="coefA" value="2" step="0.5" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="coefB" class="block text-sm font-semibold mb-1">Coeficiente linear (b):</label>
+                    <input type="number" id="coefB" value="0" step="0.5" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                
+                <button id="plotBtn" class="w-full fatec-red hover:bg-red-800 text-white font-bold py-3 rounded-md transition-colors shadow-md">
+                    Plotar Gráfico
+                </button>
+            </div>
 
-  <div id="live-info"></div>
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="font-bold text-blue-800 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    Dicas de Valores
+                </h3>
+                <ul class="text-sm text-blue-900 space-y-2">
+                    <li><strong>a = 2, b = 0</strong>: Reta crescente passando exatamente pelo centro (origem).</li>
+                    <li><strong>a = -1, b = 5</strong>: Reta decrescente cruzando o eixo Y mais acima.</li>
+                    <li><strong>a = 0, b = 3</strong>: Reta horizontal (função constante).</li>
+                    <li><strong>a = 0.5, b = -4</strong>: Reta de inclinação suave, começando na parte inferior.</li>
+                </ul>
+            </div>
+        </aside>
 
-  <div id="plot-wrap">
-    <svg id="plot" viewBox="0 0 340 480" role="img">
-      <title>Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque</title>
-    </svg>
-  </div>
+        <section class="w-full lg:w-2/3 bg-white p-4 rounded-xl shadow-lg flex justify-center items-center">
+            <div class="relative w-full aspect-square md:aspect-video max-h-[600px] border border-gray-200 rounded-lg overflow-hidden bg-[#fafafa]">
+                <canvas id="graphCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+            </div>
+        </section>
 
-  <div id="result-box"></div>
+    </main>
 
-  <footer>Lei do Resfriamento de Newton — T(t) = T_amb + (T₀ − T_amb)·e^(−kt)</footer>
-</div>
+    <footer class="bg-gray-900 text-gray-300 py-8 text-center text-sm px-4">
+        <div class="max-w-4xl mx-auto font-medium leading-relaxed">
+            Venha fazer parte da Familia Fatec Campinas, faça sua inscrição em um de nossos cursos: Analise e Desenvolvimento de Sistemas, Gestão Empresarial, Processos Químicos, Gestão da tecnologia da Informação, Gestão de Energia e Eficiência Energética e Logística
+        </div>
+    </footer>
 
-<script>
-(function(){
-  var plotBtn = document.getElementById('plot-btn');
-  var resetBtn = document.getElementById('reset-btn');
-  var liveInfo = document.getElementById('live-info');
-  var svg = document.getElementById('plot');
-  var resultBox = document.getElementById('result-box');
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const plotBtn = document.getElementById('plotBtn');
+        const inputA = document.getElementById('coefA');
+        const inputB = document.getElementById('coefB');
 
-  var T0 = 100, TAMB = 20, K = 0.015;
-  var TEND = 120;
-  var animating = false;
+        let animationId;
+        const GRID_SIZE = 10; // Plota de -10 a 10 no eixo X e Y
+        let scaleX, scaleY, originX, originY;
 
-  var W = 340, H = 480, ML = 40, MR = 15;
-  var PW = W - ML - MR;
-  var cupCx = 170, cupTop = 40, cupBottom = 115, cupHalfW = 30;
-  var chartTop = 175, chartBottom = 460;
-  var PH = chartBottom - chartTop;
-  var N = 150;
+        function resizeCanvas() {
+            // Ajusta o tamanho interno do canvas para casar com o tamanho em tela
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
 
-  var HOT = [226, 75, 74];
-  var COLD = [55, 138, 221];
+            // Define origem no centro da tela
+            originX = canvas.width / 2;
+            originY = canvas.height / 2;
 
-  function fmt(n){
-    var r = Math.round(n * 10) / 10;
-    return r.toFixed(1).replace('.', ',');
-  }
-  function fmt0(n){ return Math.round(n).toString(); }
+            // Escala de pixels por unidade
+            scaleX = canvas.width / (GRID_SIZE * 2);
+            scaleY = canvas.height / (GRID_SIZE * 2);
 
-  function temp(t){ return TAMB + (T0 - TAMB) * Math.exp(-K * t); }
+            drawGridAndAxes();
+        }
 
-  function colorFor(T){
-    var frac = (T - TAMB) / (T0 - TAMB);
-    frac = Math.max(0, Math.min(1, frac));
-    var r = Math.round(COLD[0] + (HOT[0]-COLD[0])*frac);
-    var g = Math.round(COLD[1] + (HOT[1]-COLD[1])*frac);
-    var b = Math.round(COLD[2] + (HOT[2]-COLD[2])*frac);
-    return 'rgb(' + r + ',' + g + ',' + b + ')';
-  }
+        // Funções para converter coordenadas cartesianas para coordenadas da tela
+        function toScreenX(x) {
+            return originX + (x * scaleX);
+        }
 
-  function clearSvg(){
-    while(svg.lastChild) svg.removeChild(svg.lastChild);
-    var t = document.createElementNS('http://www.w3.org/2000/svg','title');
-    t.textContent = 'Simulação do resfriamento lento da água fervendo, com gráfico de temperatura por tempo em destaque';
-    svg.appendChild(t);
-  }
+        function toScreenY(y) {
+            return originY - (y * scaleY); // O eixo Y na tela cresce para baixo
+        }
 
-  function svgEl(tag, attrs){
-    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
-    return el;
-  }
+        function drawGridAndAxes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  function pxChart(t){ return ML + (t / TEND) * PW; }
+            // Desenhar malha fina
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 1;
 
-  function runPlot(){
-    if(animating) return;
-    animating = true;
-    resultBox.style.display = 'none';
-    liveInfo.textContent = '';
-    clearSvg();
+            for(let i = -GRID_SIZE; i <= GRID_SIZE; i++) {
+                // Linhas verticais
+                ctx.beginPath();
+                ctx.moveTo(toScreenX(i), 0);
+                ctx.lineTo(toScreenX(i), canvas.height);
+                ctx.stroke();
 
-    var defs = svgEl('defs', {});
-    var grad = svgEl('linearGradient', {id:'tempGrad', gradientUnits:'userSpaceOnUse', x1:pxChart(0), y1:0, x2:pxChart(TEND), y2:0});
-    grad.appendChild(svgEl('stop', {offset:'0%', 'stop-color':'rgb(' + HOT.join(',') + ')'}));
-    grad.appendChild(svgEl('stop', {offset:'55%', 'stop-color':'#9a5aa8'}));
-    grad.appendChild(svgEl('stop', {offset:'100%', 'stop-color':'rgb(' + COLD.join(',') + ')'}));
-    defs.appendChild(grad);
-    var chartClip = svgEl('clipPath', {id:'tempClip'});
-    var chartClipRect = svgEl('rect', {x:pxChart(0), y:chartTop, width:0, height:PH});
-    chartClip.appendChild(chartClipRect);
-    defs.appendChild(chartClip);
-    svg.appendChild(defs);
+                // Linhas horizontais
+                ctx.beginPath();
+                ctx.moveTo(0, toScreenY(i));
+                ctx.lineTo(canvas.width, toScreenY(i));
+                ctx.stroke();
+            }
 
-    // Cup
-    var cupBody = svgEl('path', {
-      d: 'M ' + (cupCx-cupHalfW) + ' ' + cupTop + ' L ' + (cupCx-cupHalfW+6) + ' ' + cupBottom + ' Q ' + cupCx + ' ' + (cupBottom+8) + ' ' + (cupCx+cupHalfW-6) + ' ' + cupBottom + ' L ' + (cupCx+cupHalfW) + ' ' + cupTop + ' Z',
-      fill: colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5
-    });
-    svg.appendChild(cupBody);
-    svg.appendChild(svgEl('ellipse', {cx:cupCx, cy:cupTop, rx:cupHalfW, ry:6, fill:colorFor(T0), stroke:'#8a8a86', 'stroke-width':1.5, opacity:'0.9'}));
-    svg.appendChild(svgEl('path', {d:'M ' + (cupCx+cupHalfW-2) + ' ' + (cupTop+13) + ' q 15 5 15 20 q 0 15 -15 20', fill:'none', stroke:'#8a8a86', 'stroke-width':4}));
+            // Desenhar Eixos X e Y
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
 
-    var steamPaths = [];
-    for(var sIdx=0; sIdx<3; sIdx++){
-      var sx = cupCx - 13 + sIdx*13;
-      var sp = svgEl('path', {d:'M ' + sx + ' ' + (cupTop-6) + ' q -5 -9 0 -18 q 5 -9 0 -18', fill:'none', stroke:'#ffffff', 'stroke-width':2, 'stroke-linecap':'round', opacity:'0'});
-      svg.appendChild(sp);
-      steamPaths.push(sp);
-    }
+            // Eixo Y
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            ctx.stroke();
 
-    var tempLabel = svgEl('text', {x:cupCx, y:cupBottom+30, 'text-anchor':'middle', 'font-size':'20', 'font-weight':'600', fill:colorFor(T0)});
-    tempLabel.textContent = fmt0(T0) + '°C';
-    svg.appendChild(tempLabel);
+            // Eixo X
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            ctx.stroke();
 
-    // Chart (taller)
-    function py(v){ return chartBottom - (v - (TAMB-5)) / ((T0+5) - (TAMB-5)) * PH; }
-    var axesG = svgEl('g', {});
-    var xAxisY = py(TAMB-5);
-    axesG.appendChild(svgEl('line', {x1:ML, y1:xAxisY, x2:ML+PW, y2:xAxisY, stroke:'#b4b2a9', 'stroke-width':1}));
-    axesG.appendChild(svgEl('line', {x1:ML, y1:chartTop, x2:ML, y2:chartBottom, stroke:'#b4b2a9', 'stroke-width':1}));
-    [0, 30, 60, 90, 120].forEach(function(v){
-      var lbl = svgEl('text', {x:pxChart(v), y:xAxisY+14, 'text-anchor':'middle', 'font-size':'10', fill:'#898781'});
-      lbl.textContent = v + ' min';
-      axesG.appendChild(lbl);
-    });
-    [20, 40, 60, 80, 100].forEach(function(v){
-      var y = py(v);
-      var lbl = svgEl('text', {x:ML-6, y:y+3, 'text-anchor':'end', 'font-size':'10', fill:'#898781'});
-      lbl.textContent = v + '°C';
-      axesG.appendChild(lbl);
-      axesG.appendChild(svgEl('line', {x1:ML, y1:y, x2:ML+PW, y2:y, stroke:'#e1e0d9', 'stroke-width':1}));
-    });
-    svg.appendChild(axesG);
+            // Marcações numéricas
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px Inter';
+            for(let i = -GRID_SIZE; i <= GRID_SIZE; i+=2) {
+                if (i !== 0) {
+                    ctx.fillText(i, toScreenX(i) - 10, originY + 15); // X
+                    ctx.fillText(i, originX + 5, toScreenY(i) + 4);   // Y
+                }
+            }
+            // Origem (0,0)
+            ctx.fillText('0', originX + 5, originY + 15);
+        }
 
-    var ambLine = svgEl('line', {x1:ML, y1:py(TAMB), x2:ML+PW, y2:py(TAMB), stroke:'#b4b2a9', 'stroke-width':1, 'stroke-dasharray':'3,3'});
-    svg.appendChild(ambLine);
+        function animatePlot(a, b) {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
 
-    var pts = [];
-    for(var i=0;i<=N;i++){
-      var t = TEND * i / N;
-      pts.push([t, temp(t)]);
-    }
-    function pathFromPts(ptsArr){
-      var s = 'M ' + pxChart(ptsArr[0][0]) + ' ' + py(ptsArr[0][1]);
-      for(var j=1;j<ptsArr.length;j++){ s += ' L ' + pxChart(ptsArr[j][0]) + ' ' + py(ptsArr[j][1]); }
-      return s;
-    }
-    var chartGroup = svgEl('g', {'clip-path':'url(#tempClip)'});
-    svg.appendChild(chartGroup);
-    var path = svgEl('path', {d: pathFromPts(pts), fill:'none', stroke:'url(#tempGrad)', 'stroke-width':3.2, 'stroke-linecap':'round'});
-    chartGroup.appendChild(path);
+            drawGridAndAxes(); // Limpa e redesenha os eixos antes de nova animação
 
-    var dot = svgEl('circle', {r:5, fill:colorFor(T0), stroke:'#ffffff', 'stroke-width':2, cx:pxChart(0), cy:py(T0)});
-    svg.appendChild(dot);
+            // Vamos desenhar a reta de x = -10 até x = 10
+            const startX = -GRID_SIZE;
+            const endX = GRID_SIZE;
+            const startY = a * startX + b;
+            const endY = a * endX + b;
 
-    var duration = 15000;
-    var start = null;
+            let progress = 0; // Vai de 0 a 1
+            const animationSpeed = 0.01; // Velocidade da animação (menor = mais lento)
 
-    function step(ts){
-      if(!start) start = ts;
-      var elapsed = ts - start;
-      var frac = Math.min(elapsed / duration, 1);
-      var curT = frac * TEND;
-      var curTemp = temp(curT);
-      var col = colorFor(curTemp);
+            ctx.strokeStyle = '#b91c1c'; // Cor da reta (Fatec Red)
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
 
-      chartClipRect.setAttribute('width', Math.max(0, pxChart(curT) - pxChart(0)));
-      dot.setAttribute('cx', pxChart(curT));
-      dot.setAttribute('cy', py(curTemp));
-      dot.setAttribute('fill', col);
+            function drawFrame() {
+                progress += animationSpeed;
+                if (progress > 1) progress = 1; // Trava o progresso no final
 
-      cupBody.setAttribute('fill', col);
-      tempLabel.setAttribute('fill', col);
-      tempLabel.textContent = fmt0(curTemp) + '°C';
+                // Calcula o ponto atual da animação com interpolação linear
+                const currentX = startX + (endX - startX) * progress;
+                const currentY = startY + (endY - startY) * progress;
 
-      var steamOpacity = Math.max(0, (curTemp - TAMB - 15) / (T0 - TAMB - 15));
-      steamPaths.forEach(function(sp){ sp.setAttribute('opacity', (steamOpacity*0.85).toFixed(2)); });
+                // Desenha o segmento de reta
+                drawGridAndAxes(); // Redesenha o fundo
+                
+                ctx.beginPath();
+                ctx.moveTo(toScreenX(startX), toScreenY(startY));
+                ctx.lineTo(toScreenX(currentX), toScreenY(currentY));
+                ctx.stroke();
 
-      liveInfo.style.color = col;
-      liveInfo.textContent = 't = ' + fmt(curT) + ' min   temperatura: ' + fmt(curTemp) + ' °C';
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(drawFrame);
+                }
+            }
 
-      if(frac < 1){
-        requestAnimationFrame(step);
-      } else {
-        finishPlot();
-      }
-    }
-    requestAnimationFrame(step);
-  }
+            drawFrame(); // Inicia o loop
+        }
 
-  function finishPlot(){
-    animating = false;
-    liveInfo.textContent = '';
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Re-plota o gráfico atual sem animação se a tela redimensionar, ou reinicia
+            const a = parseFloat(inputA.value);
+            const b = parseFloat(inputB.value);
+            if(!isNaN(a) && !isNaN(b)){
+                // Desenha rápido no resize
+                drawGridAndAxes();
+                ctx.strokeStyle = '#b91c1c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(toScreenX(-GRID_SIZE), toScreenY(a * -GRID_SIZE + b));
+                ctx.lineTo(toScreenX(GRID_SIZE), toScreenY(a * GRID_SIZE + b));
+                ctx.stroke();
+            }
+        });
 
-    var halfLifeLike = Math.log(2) / K;
-    var infoLines = [];
-    infoLines.push('Com uma taxa de resfriamento bem menor (k = ' + K + '), a água demora muito mais para perder calor.');
-    infoLines.push('Em ' + fmt0(TEND) + ' minutos (2 horas simuladas), a água ainda está a ' + fmt(temp(TEND)) + '°C — bem mais quente do que ficaria com um resfriamento rápido.');
-    infoLines.push('A diferença de temperatura só cai pela metade a cada ' + fmt(halfLifeLike) + ' minutos — quase 46 minutos, contra os 14 minutos da simulação anterior.');
-    infoLines.push('O gráfico mais alto deixa mais fácil enxergar cada faixa de 20°C separadamente, já que a curva ocupa mais espaço vertical.');
+        plotBtn.addEventListener('click', () => {
+            const a = parseFloat(inputA.value);
+            const b = parseFloat(inputB.value);
 
-    resultBox.innerHTML = infoLines.map(function(l){ return '<div>' + l + '</div>'; }).join('');
-    resultBox.style.display = 'block';
-  }
+            if (isNaN(a) || isNaN(b)) {
+                // Ao invés de alert, usa fallbacks silenciosos se o user apagar tudo
+                return;
+            }
 
-  plotBtn.addEventListener('click', runPlot);
+            animatePlot(a, b);
+        });
 
-  resetBtn.addEventListener('click', function(){
-    animating = false;
-    liveInfo.textContent = '';
-    resultBox.style.display = 'none';
-    clearSvg();
-  });
-})();
-</script>
+        // Setup Inicial
+        resizeCanvas();
+        // Plota o gráfico padrão ao iniciar
+        setTimeout(() => {
+            animatePlot(parseFloat(inputA.value), parseFloat(inputB.value));
+        }, 300);
+
+    </script>
 </body>
 </html>
