@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMON // Módulo de Sequência</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a1f38;
+    --navy-panel:#0f2c4c;
+    --navy-line: rgba(233, 244, 250, 0.14);
+    --paper:#e8f1f8;
+    --paper-dim: rgba(232,241,248,0.55);
+    --cyan:#7fd1e0;
+
+    --pad-n:#c1443c;   --pad-n-lit:#ff6b5b;
+    --pad-e:#c9932e;   --pad-e-lit:#ffc94a;
+    --pad-s:#3f8f6b;   --pad-s-lit:#5fd79a;
+    --pad-w:#3e5fa0;   --pad-w-lit:#6e93e8;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--navy-line) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--navy-line) 1px, transparent 1px) 0 0/40px 40px,
+      var(--navy-deep);
+    color:var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .sheet{
+    width:100%;
+    max-width:480px;
+    border:1px solid var(--navy-line);
+    background:rgba(15,44,76,0.35);
+    padding:22px 22px 26px;
+    position:relative;
+  }
+  .sheet::before, .sheet::after,
+  .sheet .corner-tl, .sheet .corner-br{
+    content:"";
+    position:absolute;
+    width:16px; height:16px;
+    border:1.5px solid var(--cyan);
+    opacity:0.8;
+  }
+  .sheet::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .sheet::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--navy-line);
+    padding-bottom:14px;
+    margin-bottom:22px;
+  }
+  header .title-block h1{
+    margin:0;
+    font-size:1.5rem;
+    font-weight:700;
+    letter-spacing:0.01em;
+  }
+  header .title-block p{
+    margin:4px 0 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--paper-dim);
+    letter-spacing:0.04em;
+  }
+  header .doc-id{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--cyan);
+    text-align:right;
+    line-height:1.5;
+  }
+
+  .readouts{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:1px;
+    background:var(--navy-line);
+    border:1px solid var(--navy-line);
+    margin-bottom:26px;
+  }
+  .readout{
+    background:var(--navy-deep);
+    padding:10px 12px;
+  }
+  .readout .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    color:var(--paper-dim);
+    letter-spacing:0.06em;
+  }
+  .readout .value{
+    font-family:'JetBrains Mono', monospace;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--cyan);
+    margin-top:2px;
+  }
+
+  .ring-wrap{
+    position:relative;
+    width:100%;
+    max-width:340px;
+    aspect-ratio:1/1;
+    margin:0 auto 24px;
+  }
+  .pad-grid{
+    position:relative;
+    width:100%;
+    height:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:6px;
+    border-radius:50%;
+    overflow:hidden;
+    border:1px solid var(--navy-line);
+    box-shadow: 0 0 0 8px var(--navy-deep), 0 0 0 9px var(--navy-line);
+  }
+  .pad{
+    border:none;
+    cursor:pointer;
+    position:relative;
+    filter:brightness(0.72) saturate(0.85);
+    transition:filter 0.08s ease, transform 0.08s ease;
+    outline:none;
+  }
+  .pad:focus-visible{ box-shadow: inset 0 0 0 3px var(--paper); }
+  .pad[data-dir="n"]{ background:var(--pad-n); border-radius: 100% 0 0 0; }
+  .pad[data-dir="e"]{ background:var(--pad-e); border-radius: 0 100% 0 0; }
+  .pad[data-dir="w"]{ background:var(--pad-w); border-radius: 0 0 0 100%; }
+  .pad[data-dir="s"]{ background:var(--pad-s); border-radius: 0 0 100% 0; }
+  .pad.lit[data-dir="n"]{ background:var(--pad-n-lit); }
+  .pad.lit[data-dir="e"]{ background:var(--pad-e-lit); }
+  .pad.lit[data-dir="w"]{ background:var(--pad-w-lit); }
+  .pad.lit[data-dir="s"]{ background:var(--pad-s-lit); }
+  .pad.lit{ filter:brightness(1.15) saturate(1.1); transform:scale(0.985); }
+  .pad:active{ filter:brightness(1.05); }
+
+  .hub{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:32%; height:32%;
+    background:var(--navy-deep);
+    border:1px solid var(--navy-line);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    color:var(--paper-dim);
+    text-align:center;
+    letter-spacing:0.04em;
+    pointer-events:none;
+  }
+
+  .status-line{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--paper-dim);
+    margin-bottom:16px;
+    letter-spacing:0.02em;
+  }
+  .status-line .dot{
+    display:inline-block;
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--paper-dim);
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .status-line.playback .dot{ background:var(--pad-e-lit); }
+  .status-line.input .dot{ background:var(--pad-s-lit); }
+  .status-line.over .dot{ background:var(--pad-n-lit); }
+
+  .action-row{
+    display:flex;
+    gap:10px;
+  }
+  button.cta{
+    flex:1;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    padding:12px 16px;
+    background:transparent;
+    border:1px solid var(--cyan);
+    color:var(--cyan);
+    cursor:pointer;
+    letter-spacing:0.01em;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  button.cta:hover{ background:var(--cyan); color:var(--navy-deep); }
+  button.cta:disabled{
+    opacity:0.35;
+    cursor:default;
+    background:transparent;
+    color:var(--cyan);
+  }
+
+  footer{
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    color:var(--paper-dim);
+    text-align:center;
+    letter-spacing:0.04em;
+    opacity:0.7;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .pad{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<main class="sheet">
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+
+  <header>
+    <div class="title-block">
+      <h1>SIMON</h1>
+      <p>MÓDULO DE MEMÓRIA &amp; SEQUÊNCIA</p>
+    </div>
+    <div class="doc-id">
+      REV. 01<br>
+      FIG. 4-C
+    </div>
+  </header>
+
+  <div class="readouts">
+    <div class="readout">
+      <div class="label">NÍVEL</div>
+      <div class="value" id="val-level">00</div>
+    </div>
+    <div class="readout">
+      <div class="label">RECORDE</div>
+      <div class="value" id="val-best">00</div>
+    </div>
+    <div class="readout">
+      <div class="label">CADÊNCIA</div>
+      <div class="value" id="val-speed">—</div>
+    </div>
+  </div>
+
+  <div class="ring-wrap">
+    <div class="pad-grid">
+      <button class="pad" data-dir="n" aria-label="Quadrante Norte"></button>
+      <button class="pad" data-dir="e" aria-label="Quadrante Leste"></button>
+      <button class="pad" data-dir="w" aria-label="Quadrante Oeste"></button>
+      <button class="pad" data-dir="s" aria-label="Quadrante Sul"></button>
+    </div>
+    <div class="hub" id="hub">TOQUE<br>INICIAR</div>
+  </div>
+
+  <div class="status-line" id="status-line">
+    <span><span class="dot"></span><span id="status-text">AGUARDANDO INÍCIO</span></span>
+    <span id="status-count"></span>
+  </div>
+
+  <div class="action-row">
+    <button class="cta" id="btn-start">INICIAR SEQUÊNCIA</button>
+  </div>
+
+  <footer>SISTEMA DE ÁUDIO WEB · 4 CANAIS · DIFICULDADE PROGRESSIVA</footer>
+</main>
+
+<script>
+(function(){
+  const DIRS = ['n','e','w','s'];
+  const FREQ = { n: 329.63, e: 261.63, w: 220.00, s: 164.81 }; // E4, C4, A3, E3
+
+  const pads = {};
+  DIRS.forEach(d => pads[d] = document.querySelector(`.pad[data-dir="${d}"]`));
+  const hub = document.getElementById('hub');
+  const btnStart = document.getElementById('btn-start');
+  const statusLine = document.getElementById('status-line');
+  const statusText = document.getElementById('status-text');
+  const statusCount = document.getElementById('status-count');
+  const valLevel = document.getElementById('val-level');
+  const valBest = document.getElementById('val-best');
+  const valSpeed = document.getElementById('val-speed');
+
+  let sequence = [];
+  let playerStep = 0;
+  let acceptingInput = false;
+  let best = 0;
+
+  try {
+    const stored = localStorage.getItem('simon-best');
+    if (stored) best = parseInt(stored, 10) || 0;
+  } catch(e) { /* localStorage indisponível; segue sem persistência */ }
+  valBest.textContent = String(best).padStart(2, '0');
+
+  let audioCtx = null;
+  function ensureAudio(){
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playTone(dir, duration = 0.32){
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = FREQ[dir];
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.28, audioCtx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration + 0.02);
+  }
+
+  function playErrorTone(){
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 98;
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.62);
+  }
+
+  function lightPad(dir, ms){
+    return new Promise(resolve => {
+      pads[dir].classList.add('lit');
+      playTone(dir, Math.max(ms/1000 - 0.05, 0.15));
+      setTimeout(() => {
+        pads[dir].classList.remove('lit');
+        resolve();
+      }, ms);
+    });
+  }
+
+  function stepInterval(level){
+    // Cadência cai de 800ms para um piso de 320ms conforme o nível sobe.
+    return Math.max(800 - (level - 1) * 32, 320);
+  }
+
+  function speedLabel(ms){
+    if (ms > 650) return 'LENTA';
+    if (ms > 480) return 'MÉDIA';
+    if (ms > 360) return 'RÁPIDA';
+    return 'MÁXIMA';
+  }
+
+  function setStatus(mode, text, count){
+    statusLine.classList.remove('playback','input','over');
+    if (mode) statusLine.classList.add(mode);
+    statusText.textContent = text;
+    statusCount.textContent = count || '';
+  }
+
+  async function playSequence(){
+    acceptingInput = false;
+    setStatus('playback', 'REPRODUZINDO SEQUÊNCIA', `${sequence.length} PASSO(S)`);
+    hub.innerHTML = 'OBSERVE';
+    const interval = stepInterval(sequence.length);
+    await new Promise(r => setTimeout(r, 450));
+    for (const dir of sequence){
+      await lightPad(dir, interval * 0.62);
+      await new Promise(r => setTimeout(r, interval * 0.38));
+    }
+    playerStep = 0;
+    acceptingInput = true;
+    hub.innerHTML = 'SUA<br>VEZ';
+    setStatus('input', 'REPITA A SEQUÊNCIA', `PASSO ${1}/${sequence.length}`);
+  }
+
+  function nextRound(){
+    sequence.push(DIRS[Math.floor(Math.random() * 4)]);
+    valLevel.textContent = String(sequence.length).padStart(2, '0');
+    const interval = stepInterval(sequence.length);
+    valSpeed.textContent = speedLabel(interval);
+    playSequence();
+  }
+
+  function gameOver(){
+    acceptingInput = false;
+    playErrorTone();
+    setStatus('over', 'SEQUÊNCIA QUEBRADA', `ALCANÇOU NÍVEL ${sequence.length}`);
+    hub.innerHTML = 'FALHA<br>TOQUE PARA REINICIAR';
+    if (sequence.length - 1 > best) {
+      best = sequence.length - 1;
+      valBest.textContent = String(best).padStart(2, '0');
+      try { localStorage.setItem('simon-best', String(best)); } catch(e) {}
+    }
+    btnStart.disabled = false;
+    btnStart.textContent = 'REINICIAR SEQUÊNCIA';
+    sequence = [];
+    valLevel.textContent = '00';
+    valSpeed.textContent = '—';
+  }
+
+  function handlePadPress(dir){
+    if (!acceptingInput) return;
+    playTone(dir, 0.22);
+    pads[dir].classList.add('lit');
+    setTimeout(() => pads[dir].classList.remove('lit'), 160);
+
+    if (dir !== sequence[playerStep]) {
+      gameOver();
+      return;
+    }
+    playerStep++;
+    if (playerStep === sequence.length) {
+      acceptingInput = false;
+      setStatus(null, 'NÍVEL CONCLUÍDO', '');
+      hub.innerHTML = 'CORRETO';
+      setTimeout(nextRound, 700);
+    } else {
+      setStatus('input', 'REPITA A SEQUÊNCIA', `PASSO ${playerStep + 1}/${sequence.length}`);
+    }
+  }
+
+  DIRS.forEach(dir => {
+    pads[dir].addEventListener('click', () => handlePadPress(dir));
+  });
+
+  btnStart.addEventListener('click', () => {
+    ensureAudio();
+    sequence = [];
+    btnStart.disabled = true;
+    btnStart.textContent = 'EM ANDAMENTO…';
+    nextRound();
+  });
+})();
+</script>
+
+</body>
+</html>
