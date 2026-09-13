@@ -358,17 +358,18 @@
   // o seno é periódico e limitado — em vez do "núcleo" (raízes/críticos) usado
   // nas curvas polinomiais/exponencial, aqui simplesmente exibimos um número
   // fixo de períodos completos, então a onda fica bem visível seja qual for
-  // a frequência escolhida
+  // a frequência escolhida. O gráfico começa em x = 0 (eixo Y na borda
+  // esquerda) e avança para a direita, em vez de ficar centralizado em 0.
   function computeXRange(b){
-    let halfWidth;
+    let width;
     if (b === 0){
-      halfWidth = 8;
+      width = 16;
     } else {
       const period = 2 * Math.PI / Math.abs(b);
-      halfWidth = (NUM_PERIODS * period) / 2;
-      halfWidth = Math.min(Math.max(halfWidth, 2), 20);
+      width = NUM_PERIODS * period;
+      width = Math.min(Math.max(width, 4), 40);
     }
-    return [-halfWidth, halfWidth];
+    return [0, width];
   }
 
   // a amplitude já limita a curva entre d-|a| e d+|a| — escala Y direta, sem
