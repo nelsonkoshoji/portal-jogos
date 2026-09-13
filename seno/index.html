@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Função do 4º Grau — Fatec Campinas</title>
+<title>Simulador de Função Seno — Fatec Campinas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
@@ -118,13 +118,10 @@
   }
   .coef-grid{
     display:grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
   }
-  @media (max-width: 620px){
-    .coef-grid{ grid-template-columns: repeat(3, 1fr); }
-  }
-  @media (max-width: 380px){
+  @media (max-width: 560px){
     .coef-grid{ grid-template-columns: repeat(2, 1fr); }
   }
 
@@ -238,7 +235,7 @@
 
 <header class="top">
   <h1>Bem vindos ao Portas Abertas da Fatec Campinas</h1>
-  <p>Simulador de Função do 4º Grau · ADS — Análise e Desenvolvimento de Sistemas</p>
+  <p>Simulador de Função Seno · ADS — Análise e Desenvolvimento de Sistemas</p>
 </header>
 
 <main>
@@ -250,28 +247,24 @@
   <section class="panel">
     <h2>Coeficientes</h2>
 
-    <div class="equation-box" id="equationBox">f(x) = 1x⁴ + 0x³ + 0x² + 0x + 0</div>
+    <div class="equation-box" id="equationBox">f(x) = sen(x)</div>
 
     <div class="coef-grid">
       <div class="field">
-        <label for="inputA">a</label>
+        <label for="inputA">a (amplitude)</label>
         <input type="number" id="inputA" value="1" step="0.5">
       </div>
       <div class="field">
-        <label for="inputB">b</label>
-        <input type="number" id="inputB" value="0" step="0.5">
+        <label for="inputB">b (frequência)</label>
+        <input type="number" id="inputB" value="1" step="0.5">
       </div>
       <div class="field">
-        <label for="inputC">c</label>
-        <input type="number" id="inputC" value="0" step="0.5">
+        <label for="inputC">c (fase)</label>
+        <input type="number" id="inputC" value="0" step="0.1">
       </div>
       <div class="field">
-        <label for="inputD">d</label>
+        <label for="inputD">d (deslocamento vertical)</label>
         <input type="number" id="inputD" value="0" step="0.5">
-      </div>
-      <div class="field">
-        <label for="inputE">e</label>
-        <input type="number" id="inputE" value="0" step="0.5">
       </div>
     </div>
 
@@ -284,7 +277,7 @@
   <section class="panel graph-wrap">
     <h2>Gráfico</h2>
     <canvas id="graphCanvas"></canvas>
-    <p class="graph-caption">A curva é desenhada bem lentamente para você acompanhar sua formação, ponto a ponto.</p>
+    <p class="graph-caption">A onda é desenhada bem lentamente para você acompanhar sua formação, ponto a ponto.</p>
   </section>
 
   <section class="panel">
@@ -306,29 +299,28 @@
   const inputB = document.getElementById('inputB');
   const inputC = document.getElementById('inputC');
   const inputD = document.getElementById('inputD');
-  const inputE = document.getElementById('inputE');
   const equationBox = document.getElementById('equationBox');
   const infoList = document.getElementById('infoList');
   const hintList = document.getElementById('hintList');
   const btnPlot = document.getElementById('btnPlot');
   const btnClear = document.getElementById('btnClear');
 
-  let X_MIN = -6, X_MAX = 6;           // faixa do eixo X exibida (recalculada a cada plotagem)
-  const SCAN_MIN = -15, SCAN_MAX = 15; // faixa usada para buscar raízes/pontos críticos reais
-  const SAMPLES = 280;                 // pontos usados para desenhar a curva
-  const ANIM_DURATION = 9500;          // ms — plotagem bem lenta
+  let X_MIN = -Math.PI * 2.5, X_MAX = Math.PI * 2.5; // faixa do eixo X exibida (recalculada a cada plotagem)
+  const SAMPLES = 400;         // pontos usados para desenhar a curva (fina o bastante p/ frequências altas)
+  const ANIM_DURATION = 8500;  // ms — plotagem bem lenta
+  const NUM_PERIODS = 2.5;     // quantos períodos completos mostrar na tela
 
   let animId = null;
   let currentCoefs = null;
-  let yRange = [-10, 10];
+  let yRange = [-2, 2];
 
   const hints = [
-    { a: 1, b: 0, c: -4, d: 0, e: 0, desc: '.' },
-    { a: -1, b: 0, c: 4, d: 0, e: 0, desc: '.' },
-    { a: 1, b: 0, c: 0, d: 0, e: 4, desc: '.' },
-    { a: -1, b: 0, c: 5, d: 0, e: -4, desc: '.' },
-    { a: 0.5, b: 0, c: 0, d: 0, e: -3, desc: '.' },
-    { a: 0.2, b: 0, c: -2, d: 0, e: 0, desc: '.' }
+    { a: 1, b: 1, c: 0, d: 0, desc: 'seno padrão — amplitude 1, período 2π' },
+    { a: 2, b: 1, c: 0, d: 0, desc: 'amplitude maior — oscila entre -2 e 2' },
+    { a: 1, b: 2, c: 0, d: 0, desc: 'frequência dobrada — período π (oscila mais rápido)' },
+    { a: 1, b: 1, c: 1.5708, d: 0, desc: 'fase deslocada em π/2 — equivale ao cosseno' },
+    { a: 1, b: 1, c: 0, d: 2, desc: 'deslocada para cima — oscila entre 1 e 3' },
+    { a: -1, b: 1, c: 0, d: 0, desc: 'reflexão — curva invertida (a < 0)' }
   ];
 
   function buildHints(){
@@ -336,13 +328,12 @@
     hints.forEach(h => {
       const chip = document.createElement('div');
       chip.className = 'hint-chip';
-      chip.innerHTML = `<strong>a=${h.a}, b=${h.b}, c=${h.c}, d=${h.d}, e=${h.e}</strong><span class="desc">${h.desc}</span>`;
+      chip.innerHTML = `<strong>a=${h.a}, b=${h.b}, c=${h.c}, d=${h.d}</strong><span class="desc">${h.desc}</span>`;
       chip.addEventListener('click', () => {
         inputA.value = h.a;
         inputB.value = h.b;
         inputC.value = h.c;
         inputD.value = h.d;
-        inputE.value = h.e;
         updateEquation();
         plot();
       });
@@ -350,9 +341,7 @@
     });
   }
 
-  function f(x, a, b, c, d, e){ return a*x*x*x*x + b*x*x*x + c*x*x + d*x + e; }
-  function fprime(x, a, b, c, d){ return 4*a*x*x*x + 3*b*x*x + 2*c*x + d; }
-  function fdouble(x, a, b, c){ return 12*a*x*x + 6*b*x + 2*c; }
+  function f(x, a, b, c, d){ return a * Math.sin(b * x + c) + d; }
 
   function niceStep(range){
     const raw = range / 8;
@@ -366,102 +355,65 @@
     return step * mag;
   }
 
-  // localizador genérico de raízes reais de g(x) por varredura + bisseção —
-  // funciona tanto para a própria quártica quanto para sua derivada (cúbica)
-  function scanRoots(g, lo, hi, N){
-    const step = (hi - lo) / N;
-    const found = [];
-    let prevX = lo, prevY = g(prevX);
-    for (let i = 1; i <= N; i++){
-      const x = lo + step * i;
-      const y = g(x);
-      if (Math.abs(prevY) < 1e-9){
-        found.push(prevX);
-      } else if (prevY * y < 0){
-        let xa = prevX, xb = x, ya = prevY;
-        for (let iter = 0; iter < 60; iter++){
-          const xm = (xa + xb) / 2;
-          const ym = g(xm);
-          if (ya * ym <= 0){ xb = xm; } else { xa = xm; ya = ym; }
-        }
-        found.push((xa + xb) / 2);
-      }
-      prevX = x; prevY = y;
-    }
-    const filtered = [];
-    found.forEach(r => {
-      if (!filtered.some(r2 => Math.abs(r2 - r) < 1e-3)) filtered.push(r);
-    });
-    return filtered.sort((x, y) => x - y);
-  }
-
-  function findRealRoots(a, b, c, d, e){
-    if (a === 0) return [];
-    return scanRoots(x => f(x, a, b, c, d, e), SCAN_MIN, SCAN_MAX, 4000);
-  }
-
-  function criticalPoints(a, b, c, d){
-    if (a === 0) return [];
-    return scanRoots(x => fprime(x, a, b, c, d), SCAN_MIN, SCAN_MAX, 3000);
-  }
-
-  // pontos de inflexão: raízes exatas de f''(x) = 12ax² + 6bx + 2c (quadrática)
-  function inflectionPoints(a, b, c){
-    if (a === 0) return [];
-    const A = 6 * a, B = 3 * b, C = c;
-    const disc = B * B - 4 * A * C;
-    if (disc < 0) return [];
-    if (disc === 0) return [-B / (2 * A)];
-    const sq = Math.sqrt(disc);
-    return [(-B + sq) / (2 * A), (-B - sq) / (2 * A)].sort((x, y) => x - y);
-  }
-
-  // "núcleo" do que há de interessante na curva: raízes, pontos críticos e
-  // inflexões. A escala vertical é ancorada nele, não nas pontas do eixo X —
-  // assim a curva pode disparar para +∞/-∞ fora do núcleo e sair da tela,
-  // mantendo bem visível o formato (W, M, U...) no centro
-  function computeCoreX(a, b, c, d, e){
-    const roots = findRealRoots(a, b, c, d, e);
-    const crits = criticalPoints(a, b, c, d);
-    const infl = inflectionPoints(a, b, c);
-    let xs = [0, ...infl, ...roots, ...crits].filter(x => isFinite(x));
-    if (xs.length === 0) xs = [0];
-
-    let xMin = Math.min(...xs);
-    let xMax = Math.max(...xs);
-    if (xMax - xMin < 4){
-      const mid = (xMax + xMin) / 2;
-      xMin = mid - 2; xMax = mid + 2;
-    }
-    return [xMin, xMax];
-  }
-
-  function computeDisplayXRange(coreMin, coreMax){
-    const pad = (coreMax - coreMin) * 0.35;
-    let xMin = coreMin - pad;
-    let xMax = coreMax + pad;
-    xMin = Math.max(xMin, -25);
-    xMax = Math.min(xMax, 25);
-    return [xMin, xMax];
-  }
-
-  function computeYRange(a, b, c, d, e, coreMin, coreMax){
-    const crits = criticalPoints(a, b, c, d).filter(x => x >= coreMin && x <= coreMax);
-    let candidates;
-    if (crits.length > 0){
-      candidates = crits.map(x => f(x, a, b, c, d, e));
-      candidates.push(e, 0);
+  // o seno é periódico e limitado — em vez do "núcleo" (raízes/críticos) usado
+  // nas curvas polinomiais/exponencial, aqui simplesmente exibimos um número
+  // fixo de períodos completos, então a onda fica bem visível seja qual for
+  // a frequência escolhida
+  function computeXRange(b){
+    let halfWidth;
+    if (b === 0){
+      halfWidth = 8;
     } else {
-      candidates = [f(coreMin, a, b, c, d, e), f(coreMax, a, b, c, d, e), e, 0];
+      const period = 2 * Math.PI / Math.abs(b);
+      halfWidth = (NUM_PERIODS * period) / 2;
+      halfWidth = Math.min(Math.max(halfWidth, 2), 20);
     }
-    let yMin = Math.min(...candidates);
-    let yMax = Math.max(...candidates);
-    if (yMax - yMin < 4){
+    return [-halfWidth, halfWidth];
+  }
+
+  // a amplitude já limita a curva entre d-|a| e d+|a| — escala Y direta, sem
+  // precisar de núcleo/varredura como nas polinomiais
+  function computeYRange(a, d){
+    const amp = Math.abs(a);
+    let yMin = d - amp;
+    let yMax = d + amp;
+    if (yMax - yMin < 2){
       const mid = (yMax + yMin) / 2;
-      yMin = mid - 4; yMax = mid + 4;
+      yMin = mid - 2; yMax = mid + 2;
     }
-    const pad = (yMax - yMin) * 0.25;
+    const pad = Math.max((yMax - yMin) * 0.25, 1);
     return [yMin - pad, yMax + pad];
+  }
+
+  // extremos (máx./mín.) do seno dentro da faixa visível: ocorrem onde
+  // bx + c = π/2 + kπ
+  function extremaPoints(b, c){
+    if (b === 0) return [];
+    const kMinRaw = (X_MIN * b - Math.PI / 2 - c) / Math.PI;
+    const kMaxRaw = (X_MAX * b - Math.PI / 2 - c) / Math.PI;
+    const kLo = Math.floor(Math.min(kMinRaw, kMaxRaw)) - 1;
+    const kHi = Math.ceil(Math.max(kMinRaw, kMaxRaw)) + 1;
+    const pts = [];
+    for (let k = kLo; k <= kHi; k++){
+      const x = (Math.PI / 2 + k * Math.PI - c) / b;
+      if (x >= X_MIN && x <= X_MAX) pts.push(x);
+    }
+    return pts.sort((x, y) => x - y);
+  }
+
+  // raízes (onde a curva cruza d): bx + c = kπ
+  function rootsPoints(b, c){
+    if (b === 0) return [];
+    const kMinRaw = (X_MIN * b + c) / Math.PI;
+    const kMaxRaw = (X_MAX * b + c) / Math.PI;
+    const kLo = Math.floor(Math.min(kMinRaw, kMaxRaw)) - 1;
+    const kHi = Math.ceil(Math.max(kMinRaw, kMaxRaw)) + 1;
+    const pts = [];
+    for (let k = kLo; k <= kHi; k++){
+      const x = (k * Math.PI - c) / b;
+      if (x >= X_MIN && x <= X_MAX) pts.push(x);
+    }
+    return pts.sort((x, y) => x - y);
   }
 
   function resizeCanvas(){
@@ -471,7 +423,7 @@
     canvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawAxes();
-    if (currentCoefs) drawStaticCurve(currentCoefs.a, currentCoefs.b, currentCoefs.c, currentCoefs.d, currentCoefs.e);
+    if (currentCoefs) drawStaticCurve(currentCoefs.a, currentCoefs.b, currentCoefs.c, currentCoefs.d);
   }
 
   function toPixel(x, y){
@@ -526,42 +478,31 @@
     }
   }
 
-  function curvePoints(a, b, c, d, e){
+  function curvePoints(a, b, c, d){
     const pts = [];
     for (let i = 0; i <= SAMPLES; i++){
       const x = X_MIN + (X_MAX - X_MIN) * (i / SAMPLES);
-      pts.push([x, f(x, a, b, c, d, e)]);
+      pts.push([x, f(x, a, b, c, d)]);
     }
     return pts;
   }
 
-  function drawKeyPoints(a, b, c, d, e){
-    const [pyx, pyy] = toPixel(0, e);
+  function drawKeyPoints(a, b, c, d){
+    const [pyx, pyy] = toPixel(0, f(0, a, b, c, d));
     drawDot(pyx, pyy, '#ffd166');
 
-    findRealRoots(a, b, c, d, e).forEach(r => {
-      if (r >= X_MIN && r <= X_MAX){
-        const [rpx, rpy] = toPixel(r, 0);
+    if (a !== 0){
+      rootsPoints(b, c).forEach(x => {
+        const [rpx, rpy] = toPixel(x, d);
         drawDot(rpx, rpy, '#6ee7a0');
-      }
-    });
-
-    criticalPoints(a, b, c, d).forEach(x => {
-      if (x >= X_MIN && x <= X_MAX){
-        const y = f(x, a, b, c, d, e);
-        const [cpx, cpy] = toPixel(x, y);
-        const isMin = fdouble(x, a, b, c) > 0;
-        drawDot(cpx, cpy, isMin ? '#ff6fa3' : '#7ec8ff');
-      }
-    });
-
-    inflectionPoints(a, b, c).forEach(x => {
-      if (x >= X_MIN && x <= X_MAX){
-        const y = f(x, a, b, c, d, e);
-        const [ipx, ipy] = toPixel(x, y);
-        drawDot(ipx, ipy, '#b48cff');
-      }
-    });
+      });
+      extremaPoints(b, c).forEach(x => {
+        const y = f(x, a, b, c, d);
+        const isMax = y > d;
+        const [epx, epy] = toPixel(x, y);
+        drawDot(epx, epy, isMax ? '#7ec8ff' : '#ff6fa3');
+      });
+    }
   }
 
   function drawDot(x, y, color){
@@ -574,9 +515,9 @@
     ctx.stroke();
   }
 
-  function drawStaticCurve(a, b, c, d, e){
+  function drawStaticCurve(a, b, c, d){
     drawAxes();
-    const pts = curvePoints(a, b, c, d, e);
+    const pts = curvePoints(a, b, c, d);
     ctx.strokeStyle = '#ff9d3f';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -585,18 +526,18 @@
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     });
     ctx.stroke();
-    drawKeyPoints(a, b, c, d, e);
+    drawKeyPoints(a, b, c, d);
   }
 
   function easeInOutQuad(t){
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
 
-  function animateCurve(a, b, c, d, e, duration){
+  function animateCurve(a, b, c, d, duration){
     if (animId) cancelAnimationFrame(animId);
     currentCoefs = null;
 
-    const pts = curvePoints(a, b, c, d, e);
+    const pts = curvePoints(a, b, c, d);
     const pixelPts = pts.map(([x, y]) => toPixel(x, y));
     const start = performance.now();
 
@@ -632,8 +573,8 @@
       if (t < 1){
         animId = requestAnimationFrame(frame);
       } else {
-        currentCoefs = { a, b, c, d, e };
-        drawStaticCurve(a, b, c, d, e);
+        currentCoefs = { a, b, c, d };
+        drawStaticCurve(a, b, c, d);
       }
     }
     animId = requestAnimationFrame(frame);
@@ -641,7 +582,7 @@
 
   function fmtNum(n){
     if (!isFinite(n)) return '—';
-    return Number.isInteger(n) ? String(n) : (Math.round(n * 100) / 100).toString();
+    return Number.isInteger(n) ? String(n) : (Math.round(n * 1000) / 1000).toString();
   }
 
   function updateEquation(){
@@ -649,64 +590,48 @@
     const b = parseFloat(inputB.value) || 0;
     const c = parseFloat(inputC.value) || 0;
     const d = parseFloat(inputD.value) || 0;
-    const e = parseFloat(inputE.value) || 0;
-    const parts = [];
 
-    function term(coef, symbol){
-      if (coef === 0) return;
-      const sign = coef > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
-      const abs = Math.abs(coef);
-      parts.push(sign + (abs === 1 && symbol ? symbol : `${fmtNum(abs)}${symbol}`));
+    let inner;
+    if (b === 0) inner = fmtNum(c);
+    else if (b === 1) inner = 'x';
+    else if (b === -1) inner = '-x';
+    else inner = `${fmtNum(b)}x`;
+
+    if (b !== 0 && c !== 0){
+      inner += c > 0 ? ` + ${fmtNum(c)}` : ` - ${fmtNum(Math.abs(c))}`;
     }
 
-    term(a, 'x⁴');
-    term(b, 'x³');
-    term(c, 'x²');
-    term(d, 'x');
-    if (e !== 0 || parts.length === 0){
-      const sign = e > 0 ? (parts.length ? ' + ' : '') : (parts.length ? ' - ' : '-');
-      parts.push(sign + fmtNum(Math.abs(e)));
+    let prefix;
+    if (a === 1) prefix = '';
+    else if (a === -1) prefix = '-';
+    else prefix = `${fmtNum(a)}·`;
+
+    let text = `${prefix}sen(${inner})`;
+    if (d !== 0){
+      text += d > 0 ? ` + ${fmtNum(d)}` : ` - ${fmtNum(Math.abs(d))}`;
     }
-    equationBox.textContent = 'f(x) = ' + (parts.join('') || '0');
+    equationBox.textContent = 'f(x) = ' + text;
   }
 
-  function updateInfo(a, b, c, d, e){
-    if (a === 0){
+  function updateInfo(a, b, c, d){
+    if (b === 0){
       infoList.innerHTML = `
-        <div class="info-row"><span>Atenção</span><span>a = 0 → não é função do 4º grau</span></div>
+        <div class="info-row"><span>Atenção</span><span>b = 0 → a função vira constante, não oscila</span></div>
       `;
       return;
     }
-    const roots = findRealRoots(a, b, c, d, e);
-    const raizesTxt = roots.length ? roots.map(fmtNum).join(', ') : 'nenhuma raiz real';
-
-    const crits = criticalPoints(a, b, c, d);
-    let critTxt;
-    if (crits.length === 0){
-      critTxt = 'nenhum encontrado';
-    } else {
-      critTxt = crits.map(x => {
-        const y = f(x, a, b, c, d, e);
-        const tipo = fdouble(x, a, b, c) > 0 ? 'mín.' : (fdouble(x, a, b, c) < 0 ? 'máx.' : 'sela');
-        return `${tipo} (${fmtNum(x)}, ${fmtNum(y)})`;
-      }).join(' · ');
-    }
-
-    const infl = inflectionPoints(a, b, c);
-    const inflTxt = infl.length
-      ? infl.map(x => `(${fmtNum(x)}, ${fmtNum(f(x, a, b, c, d, e))})`).join(' · ')
-      : 'nenhum';
-
-    const comportamento = a > 0
-      ? 'sobe para +∞ nas duas pontas'
-      : 'desce para -∞ nas duas pontas';
+    const amplitude = Math.abs(a);
+    const periodo = 2 * Math.PI / Math.abs(b);
+    const deslocFase = -c / b;
+    const y0 = f(0, a, b, c, d);
 
     infoList.innerHTML = `
-      <div class="info-row"><span>Comportamento nos extremos</span><span>${comportamento}</span></div>
-      <div class="info-row"><span>Raízes reais</span><span>${raizesTxt}</span></div>
-      <div class="info-row"><span>Pontos críticos (x, y)</span><span>${critTxt}</span></div>
-      <div class="info-row"><span>Pontos de inflexão</span><span>${inflTxt}</span></div>
-      <div class="info-row"><span>Corta eixo Y em</span><span>(0, ${fmtNum(e)})</span></div>
+      <div class="info-row"><span>Amplitude |a|</span><span>${fmtNum(amplitude)}</span></div>
+      <div class="info-row"><span>Período (2π/|b|)</span><span>${fmtNum(periodo)}</span></div>
+      <div class="info-row"><span>Deslocamento de fase</span><span>${fmtNum(deslocFase)}</span></div>
+      <div class="info-row"><span>Deslocamento vertical</span><span>${fmtNum(d)}</span></div>
+      <div class="info-row"><span>Valor máximo / mínimo</span><span>${fmtNum(d + amplitude)} / ${fmtNum(d - amplitude)}</span></div>
+      <div class="info-row"><span>Interceptação eixo Y</span><span>(0, ${fmtNum(y0)})</span></div>
     `;
   }
 
@@ -715,23 +640,18 @@
     const b = parseFloat(inputB.value);
     const c = parseFloat(inputC.value);
     const d = parseFloat(inputD.value);
-    const e = parseFloat(inputE.value);
-    if ([a, b, c, d, e].some(v => isNaN(v))){
-      alert('Digite valores numéricos válidos para a, b, c, d e e.');
+    if ([a, b, c, d].some(v => isNaN(v))){
+      alert('Digite valores numéricos válidos para a, b, c e d.');
       return;
     }
-    if (a === 0){
-      alert('Com a = 0 a função deixa de ser do 4º grau. Escolha um valor diferente de 0 para "a".');
-    }
-    if (Math.abs(a) > 3 || [b, c, d, e].some(v => Math.abs(v) > 10)){
-      alert('Para melhor visualização, prefira valores menores (ex: a entre -3 e 3, os demais entre -10 e 10).');
+    if (b === 0){
+      alert('Com b = 0 a função deixa de oscilar (vira constante). Escolha um valor diferente de 0 para "b".');
     }
     updateEquation();
-    updateInfo(a, b, c, d, e);
-    const [coreMin, coreMax] = computeCoreX(a, b, c, d, e);
-    [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
-    yRange = computeYRange(a, b, c, d, e, coreMin, coreMax);
-    animateCurve(a, b, c, d, e, ANIM_DURATION);
+    updateInfo(a, b, c, d);
+    [X_MIN, X_MAX] = computeXRange(b);
+    yRange = computeYRange(a, d);
+    animateCurve(a, b, c, d, ANIM_DURATION);
   }
 
   btnPlot.addEventListener('click', plot);
@@ -739,12 +659,10 @@
   inputB.addEventListener('input', updateEquation);
   inputC.addEventListener('input', updateEquation);
   inputD.addEventListener('input', updateEquation);
-  inputE.addEventListener('input', updateEquation);
 
   function resetView(){
-    const [coreMin, coreMax] = computeCoreX(1, 0, 0, 0, 0);
-    [X_MIN, X_MAX] = computeDisplayXRange(coreMin, coreMax);
-    yRange = computeYRange(1, 0, 0, 0, 0, coreMin, coreMax);
+    [X_MIN, X_MAX] = computeXRange(1);
+    yRange = computeYRange(1, 0);
   }
 
   btnClear.addEventListener('click', () => {
