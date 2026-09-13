@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simuladores de Funções — Portas Abertas Fatec Campinas</title>
+<title>Portal de Jogos — Portas Abertas Fatec Campinas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -13,7 +13,6 @@
     --blueprint-dark: #062a45;
     --blueprint-line: rgba(255,255,255,0.14);
     --grid-line: rgba(255,255,255,0.06);
-    --paper: #eef4fb;
     --accent: #ffd23f;
     --accent-2: #4fd1c5;
     --text-light: #eaf2fb;
@@ -25,13 +24,12 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--blueprint);
-    color: var(--text-light);
-    font-family: 'Space Grotesk', sans-serif;
     min-height: 100%;
   }
 
   body {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text-light);
     background-image:
       linear-gradient(var(--grid-line) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
@@ -69,26 +67,33 @@
 
   header.site-header h1 {
     margin: 0;
-    font-size: clamp(1.3rem, 5vw, 2rem);
+    font-size: clamp(1.25rem, 5vw, 2rem);
     font-weight: 700;
     line-height: 1.25;
-    color: var(--text-light);
   }
 
-  main {
+  main.container {
     flex: 1;
     width: 100%;
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 28px 16px 40px;
+    padding: 32px 16px 40px;
   }
 
-  .page-title {
+  section.secao {
+    margin-bottom: 44px;
+  }
+
+  section.secao:last-child {
+    margin-bottom: 12px;
+  }
+
+  .section-title {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
-  .page-title .eyebrow {
+  .section-title .eyebrow {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.72rem;
     letter-spacing: 0.16em;
@@ -97,37 +102,37 @@
     margin-bottom: 6px;
   }
 
-  .page-title h2 {
+  .section-title h2 {
     margin: 0 0 8px;
-    font-size: clamp(1.4rem, 5vw, 2.1rem);
+    font-size: clamp(1.3rem, 4.5vw, 1.9rem);
     font-weight: 600;
   }
 
-  .page-title p {
+  .section-title p {
     margin: 0;
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     max-width: 520px;
     margin-inline: auto;
   }
 
-  .grid {
+  .menu-jogos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
   }
 
   a.card-jogo {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 18px 18px;
+    padding: 16px 18px;
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--blueprint-line);
     border-radius: 10px;
     color: var(--text-light);
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-weight: 500;
     position: relative;
     overflow: hidden;
@@ -146,11 +151,11 @@
   }
 
   a.card-jogo .icon {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     line-height: 1;
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,15 +165,6 @@
 
   a.card-jogo .label {
     flex: 1;
-  }
-
-  a.card-jogo .go {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 0.18s ease, transform 0.18s ease;
   }
 
   a.card-jogo:hover,
@@ -181,12 +177,6 @@
   a.card-jogo:hover::before,
   a.card-jogo:focus-visible::before {
     opacity: 1;
-  }
-
-  a.card-jogo:hover .go,
-  a.card-jogo:focus-visible .go {
-    opacity: 1;
-    transform: translateX(0);
   }
 
   a.card-jogo:active {
@@ -222,9 +212,8 @@
   }
 
   @media (max-width: 480px) {
-    a.card-jogo { padding: 16px; font-size: 0.95rem; }
-    a.card-jogo .icon { width: 34px; height: 34px; font-size: 1.35rem; }
-    .go { display: none; }
+    a.card-jogo { padding: 14px; font-size: 0.92rem; }
+    a.card-jogo .icon { width: 32px; height: 32px; font-size: 1.25rem; }
   }
 </style>
 </head>
@@ -235,25 +224,50 @@
     <h1>Bem vindos ao Portas Abertas da Fatec Campinas</h1>
   </header>
 
-  <main>
-    <div class="page-title">
-      <div class="eyebrow">Games Hub</div>
-      <h2>Simuladores de Funções</h2>
-      <p>Escolha um simulador para explorar o comportamento gráfico de cada tipo de função.</p>
-    </div>
+  <main class="container">
 
-    <nav class="grid">
-      <a href="funcao1grau/" class="card-jogo"><span class="icon">📏</span><span class="label">Função do 1º grau</span><span class="go">ABRIR →</span></a>
-      <a href="funcao2grau/" class="card-jogo"><span class="icon">🎢</span><span class="label">Função do 2º grau</span><span class="go">ABRIR →</span></a>
-      <a href="funcao3grau/" class="card-jogo"><span class="icon">➰</span><span class="label">Função do 3º grau</span><span class="go">ABRIR →</span></a>
-      <a href="funcao4grau/" class="card-jogo"><span class="icon">〰️</span><span class="label">Função do 4º grau</span><span class="go">ABRIR →</span></a>
-      <a href="funcaoexponencial/" class="card-jogo"><span class="icon">🦠</span><span class="label">Função Exponencial</span><span class="go">ABRIR →</span></a>
-      <a href="funcaoseno/" class="card-jogo"><span class="icon">🌊</span><span class="label">Função Seno</span><span class="go">ABRIR →</span></a>
-      <a href="resfriamento/" class="card-jogo"><span class="icon">🧊</span><span class="label">Resfriamento de Água</span><span class="go">ABRIR →</span></a>
-      <a href="cicloterralua/" class="card-jogo"><span class="icon">🌗</span><span class="label">Ciclo Terra/Lua</span><span class="go">ABRIR →</span></a>
-      <a href="encontrocarros/" class="card-jogo"><span class="icon">🚗🚙</span><span class="label">Encontro entre dois Carros</span><span class="go">ABRIR →</span></a>
-      <a href="trajetoria/" class="card-jogo"><span class="icon">🏹</span><span class="label">Trajetória de um Lançamento Horizontal</span><span class="go">ABRIR →</span></a>
-    </nav>
+    <section class="secao">
+      <div class="section-title">
+        <div class="eyebrow">Games Hub</div>
+        <h2>🎮 Portal de Jogos</h2>
+        <p>Escolha um jogo abaixo para começar a se divertir:</p>
+      </div>
+      <nav class="menu-jogos">
+        <a href="jogo-da-velha/" class="card-jogo"><span class="icon">❌</span><span class="label">Jogo da Velha</span></a>
+        <a href="forca/" class="card-jogo"><span class="icon">🤠</span><span class="label">Jogo da Forca</span></a>
+        <a href="cobras/" class="card-jogo"><span class="icon">🐍</span><span class="label">Jogo da Cobrinha</span></a>
+        <a href="torre-de-hanoi/" class="card-jogo"><span class="icon">🗼</span><span class="label">Torre de Hanoi</span></a>
+        <a href="quinze-puzzle/" class="card-jogo"><span class="icon">🧩</span><span class="label">Quinze Puzzle</span></a>
+        <a href="adivinhe-o-numero/" class="card-jogo"><span class="icon">🎯</span><span class="label">Adivinhe o Numero</span></a>
+        <a href="lancamento-de-projetil/" class="card-jogo"><span class="icon">🚀</span><span class="label">Lançamento de Projetil</span></a>
+        <a href="sudoku/" class="card-jogo"><span class="icon">🔢</span><span class="label">Sudoku</span></a>
+        <a href="tetris/" class="card-jogo"><span class="icon">🧱</span><span class="label">Tetris</span></a>
+        <a href="cifra-de-cesar/" class="card-jogo"><span class="icon">🔐</span><span class="label">Cifra de Cesar</span></a>
+        <a href="simon-says/" class="card-jogo"><span class="icon">🎵</span><span class="label">Simon-Says</span></a>
+        <a href="cata-bugs/" class="card-jogo"><span class="icon">🐛</span><span class="label">Cata-Bugs</span></a>
+      </nav>
+    </section>
+
+    <section class="secao">
+      <div class="section-title">
+        <div class="eyebrow">Simuladores</div>
+        <h2>📐 Simulador Educacional Matemática</h2>
+        <p>Escolha um simulador para aprender:</p>
+      </div>
+      <nav class="menu-jogos">
+        <a href="funcao1grau/" class="card-jogo"><span class="icon">📏</span><span class="label">Funcao do 1o grau</span></a>
+        <a href="funcao2grau/" class="card-jogo"><span class="icon">📉</span><span class="label">Funcao do 2o grau</span></a>
+        <a href="funcao3grau/" class="card-jogo"><span class="icon">🌊</span><span class="label">Funcao do 3o grau</span></a>
+        <a href="funcao4grau/" class="card-jogo"><span class="icon">〰️</span><span class="label">Funcao do 4o grau</span></a>
+        <a href="funcaoexponencial/" class="card-jogo"><span class="icon">📈</span><span class="label">Funcao Exponencial</span></a>
+        <a href="funcaoseno/" class="card-jogo"><span class="icon">➰</span><span class="label">Funcao Seno</span></a>
+        <a href="resfriamento/" class="card-jogo"><span class="icon">🧊</span><span class="label">Refriamento de Água</span></a>
+        <a href="cicloterralua/" class="card-jogo"><span class="icon">🌗</span><span class="label">Ciclo Terra/Lua</span></a>
+        <a href="encontrocarros/" class="card-jogo"><span class="icon">🚗</span><span class="label">Encontro entre dois Carros</span></a>
+        <a href="trajetoria/" class="card-jogo"><span class="icon">🏹</span><span class="label">Trajetória de uma Lançamento Horizontal</span></a>
+      </nav>
+    </section>
+
   </main>
 
   <footer class="site-footer">
