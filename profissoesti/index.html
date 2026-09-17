@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Profissões de TI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --panel-bg: #FFFFFF;
+    --card-bg: #F4F3EE;
+    --text: #14171F;
+    --text-muted: #5B6270;
+    --border: #E4E2DA;
+    --core-bg: #14171F;
+    --core-text: #FAF9F5;
+    --core-sub: #9BA1AD;
+
+    --blue-fill:#E8F1FC; --blue-text:#1D5DA8; --blue-line:#6FA7E0;
+    --teal-fill:#E3F6EF; --teal-text:#0E7A5B; --teal-line:#5FC4A0;
+    --green-fill:#EEF6E3; --green-text:#4C7A1F; --green-line:#92C168;
+    --coral-fill:#FCEDE7; --coral-text:#C1502B; --coral-line:#E68F6A;
+    --amber-fill:#FDF3DE; --amber-text:#B9790C; --amber-line:#E5B357;
+    --purple-fill:#EFECFB; --purple-text:#5B4FC4; --purple-line:#A79CE8;
+    --pink-fill:#FCEAF1; --pink-text:#C23E76; --pink-line:#E890AF;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0B0F17;
+    --panel-bg: #10151F;
+    --card-bg: #161C29;
+    --text: #F2F1EA;
+    --text-muted: #9BA1AD;
+    --border: #262C3A;
+    --core-bg: #F2F1EA;
+    --core-text: #0B0F17;
+    --core-sub: #6E7684;
+
+    --blue-fill:#17324F; --blue-text:#9CC7F2; --blue-line:#3E6E9E;
+    --teal-fill:#123B2E; --teal-text:#7FDCB9; --teal-line:#2E7A5C;
+    --green-fill:#26380F; --green-text:#B4DC85; --green-line:#5C7E2E;
+    --coral-fill:#402318; --coral-text:#F2A98A; --coral-line:#8A4E32;
+    --amber-fill:#3D2C0C; --amber-text:#F5C56B; --amber-line:#96731F;
+    --purple-fill:#241D42; --purple-text:#C3B8F2; --purple-line:#5E4FA6;
+    --pink-fill:#3A1826; --pink-text:#F0A0C0; --pink-line:#8A4363;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --bg: #0B0F17;
+      --panel-bg: #10151F;
+      --card-bg: #161C29;
+      --text: #F2F1EA;
+      --text-muted: #9BA1AD;
+      --border: #262C3A;
+      --core-bg: #F2F1EA;
+      --core-text: #0B0F17;
+      --core-sub: #6E7684;
+
+      --blue-fill:#17324F; --blue-text:#9CC7F2; --blue-line:#3E6E9E;
+      --teal-fill:#123B2E; --teal-text:#7FDCB9; --teal-line:#2E7A5C;
+      --green-fill:#26380F; --green-text:#B4DC85; --green-line:#5C7E2E;
+      --coral-fill:#402318; --coral-text:#F2A98A; --coral-line:#8A4E32;
+      --amber-fill:#3D2C0C; --amber-text:#F5C56B; --amber-line:#96731F;
+      --purple-fill:#241D42; --purple-text:#C3B8F2; --purple-line:#5E4FA6;
+      --pink-fill:#3A1826; --pink-text:#F0A0C0; --pink-line:#8A4363;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', Arial, sans-serif;
+    height: 100%;
+  }
+
+  .app {
+    display: flex;
+    align-items: stretch;
+    min-height: 100vh;
+    padding: 28px;
+    gap: 24px;
+  }
+
+  /* ---------- Core panel ---------- */
+  .core-panel {
+    flex: 0 0 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 28px;
+    align-self: flex-start;
+    height: calc(100vh - 56px);
+  }
+
+  .core-btn {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: var(--core-bg);
+    color: var(--core-text);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Space Grotesk', Arial, sans-serif;
+    transition: transform .25s ease, box-shadow .25s ease;
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  .core-btn:hover { transform: scale(1.035); }
+  .core-btn:active { transform: scale(0.98); }
+
+  .core-btn .core-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+  }
+  .core-btn .core-hint {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--core-sub);
+    margin-top: 4px;
+  }
+
+  body[data-state="home"] .core-btn .core-hint::after { content: "clique para explorar"; }
+  body[data-state="list"] .core-btn .core-hint::after,
+  body[data-state="detail"] .core-btn .core-hint::after { content: "clique para recolher"; }
+
+  /* ---------- Content panel ---------- */
+  .content-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 980px;
+    opacity: 0;
+    transform: translateX(-14px);
+    pointer-events: none;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+
+  body[data-state="list"] .content-panel,
+  body[data-state="detail"] .content-panel {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .panel-inner { display: none; }
+  body[data-state="list"] .list-view { display: block; }
+  body[data-state="detail"] .detail-view { display: block; }
+
+  /* ---------- Branch list ---------- */
+  .list-header { margin-bottom: 18px; }
+  .list-header p.kicker {
+    font-size: 12px; font-weight: 600; letter-spacing: .03em;
+    text-transform: uppercase; color: var(--text-muted); margin: 0 0 6px;
+  }
+  .list-header h1 {
+    font-family: 'Space Grotesk', Arial, sans-serif;
+    font-size: 26px; font-weight: 700; margin: 0 0 6px;
+  }
+  .list-header p.sub { margin: 0; color: var(--text-muted); font-size: 14px; max-width: 560px; line-height: 1.5; }
+
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .branch-card {
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--panel-bg);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform .18s ease, border-color .18s ease;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .branch-card:hover { transform: translateY(-2px); }
+
+  .branch-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .branch-card h3 {
+    font-family: 'Space Grotesk', Arial, sans-serif;
+    font-size: 16px; font-weight: 700; margin: 0; color: var(--text);
+  }
+  .branch-card p { font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5; }
+  .branch-card .count { font-size: 12px; color: var(--text-muted); margin-top: auto; }
+
+  /* ---------- Detail view ---------- */
+  .detail-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 13px; font-family: 'Inter', Arial, sans-serif;
+    padding: 0; margin-bottom: 16px;
+  }
+  .detail-back:hover { color: var(--text); }
+
+  .detail-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 6px; }
+  .detail-badge {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', Arial, sans-serif; font-weight: 700; font-size: 18px;
+    flex-shrink: 0;
+  }
+  .detail-head h2 {
+    font-family: 'Space Grotesk', Arial, sans-serif;
+    font-size: 24px; font-weight: 700; margin: 0 0 6px;
+  }
+  .detail-head p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.55; max-width: 620px; }
+
+  .section-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+    color: var(--text-muted); margin: 30px 0 14px;
+  }
+
+  /* scheme */
+  .scheme {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  }
+  .scheme .step {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600;
+    font-family: 'Space Grotesk', Arial, sans-serif;
+  }
+  .scheme .arrow { color: var(--text-muted); font-size: 15px; }
+
+  /* role cards */
+  .role-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .role-card {
+    border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+    background: var(--panel-bg);
+  }
+  .role-card h4 {
+    margin: 0 0 6px; font-family: 'Space Grotesk', Arial, sans-serif;
+    font-size: 14.5px; font-weight: 700;
+  }
+  .role-card p { margin: 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+  /* comparison table */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table.compare { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  table.compare th, table.compare td {
+    text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.compare th {
+    font-family: 'Space Grotesk', Arial, sans-serif; font-weight: 700;
+    background: var(--card-bg); font-size: 12px; text-transform: uppercase; letter-spacing: .02em;
+    color: var(--text-muted);
+  }
+  table.compare tr:last-child td { border-bottom: none; }
+  table.compare td.role-name { font-weight: 600; }
+
+  @media (max-width: 780px) {
+    .app { flex-direction: column; padding: 20px; gap: 18px; }
+    .core-panel { position: static; height: auto; }
+    .content-panel { max-width: none; }
+  }
+</style>
+</head>
+<body data-state="home">
+
+<div class="app">
+  <div class="core-panel">
+    <button class="core-btn" id="coreBtn" aria-label="Alternar visualização das áreas de TI">
+      <span class="core-title">Profissões<br>de TI</span>
+      <span class="core-hint"></span>
+    </button>
+  </div>
+
+  <div class="content-panel">
+    <div class="panel-inner list-view">
+      <div class="list-header">
+        <p class="kicker">Curso de Análise e Desenvolvimento de Sistemas</p>
+        <h1>Áreas de atuação</h1>
+        <p class="sub">Clique em uma área para ver o que ela faz, um esquema do fluxo de trabalho e uma comparação entre as profissões dentro dela.</p>
+      </div>
+      <div class="branch-grid" id="branchGrid"></div>
+    </div>
+
+    <div class="panel-inner detail-view" id="detailView"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  dev: {
+    label: "Desenvolvimento",
+    color: "blue",
+    intro: "Transforma ideias e requisitos em software funcionando — da interface que o usuário vê até a lógica que roda nos servidores.",
+    scheme: ["Design da solução", "Codificação", "Testes", "Deploy", "Manutenção"],
+    roles: [
+      { name: "Front-end", does: "Constrói as telas e a experiência visual no navegador ou app.", skills: "HTML, CSS, JavaScript, React/Vue", level: "Júnior a sênior" },
+      { name: "Back-end", does: "Cria a lógica de negócio, APIs e a conexão com o banco de dados.", skills: "Java, Python, Node.js, SQL", level: "Júnior a sênior" },
+      { name: "Full-stack", does: "Atua tanto no front quanto no back, cobrindo o sistema inteiro.", skills: "Front-end + back-end combinados", level: "Pleno a sênior" },
+      { name: "Mobile", does: "Desenvolve aplicativos para Android e iOS.", skills: "Kotlin, Swift, Flutter, React Native", level: "Júnior a sênior" },
+      { name: "Game dev", does: "Programa jogos, motores gráficos e mecânicas de jogabilidade.", skills: "C++, C#, Unity, Unreal Engine", level: "Júnior a sênior" }
+    ]
+  },
+  dados: {
+    label: "Dados & IA",
+    color: "teal",
+    intro: "Transforma dados brutos em informação útil — e treina modelos que aprendem padrões a partir deles.",
+    scheme: ["Coleta", "Tratamento", "Modelagem", "Treinamento", "Insights"],
+    roles: [
+      { name: "Analista de dados", does: "Explora dados para responder perguntas de negócio com relatórios e dashboards.", skills: "SQL, Excel, Power BI/Tableau", level: "Júnior a pleno" },
+      { name: "Cientista de dados", does: "Cria modelos estatísticos e preditivos a partir dos dados.", skills: "Python, estatística, machine learning", level: "Pleno a sênior" },
+      { name: "Engenheiro de dados", does: "Constrói pipelines que coletam, limpam e disponibilizam dados em escala.", skills: "SQL, Python, Spark, cloud", level: "Pleno a sênior" },
+      { name: "Engenheiro de ML/IA", does: "Coloca modelos de machine learning em produção e os mantém funcionando.", skills: "Python, MLOps, cloud, deep learning", level: "Pleno a sênior" }
+    ]
+  },
+  infra: {
+    label: "Infraestrutura & Redes",
+    color: "green",
+    intro: "Garante que os sistemas tenham onde rodar, estejam conectados e no ar.",
+    scheme: ["Provisionamento", "Configuração", "Monitoramento", "Resposta a incidentes"],
+    roles: [
+      { name: "Administrador de redes", does: "Configura e mantém switches, roteadores e a conectividade da empresa.", skills: "TCP/IP, Cisco, firewalls", level: "Júnior a pleno" },
+      { name: "Administrador de sistemas", does: "Cuida de servidores, sistemas operacionais e serviços internos.", skills: "Linux/Windows Server, scripting", level: "Pleno" },
+      { name: "Suporte técnico", does: "Resolve problemas do dia a dia dos usuários e equipamentos.", skills: "Hardware, redes básicas, atendimento", level: "Júnior" },
+      { name: "Engenheiro cloud", does: "Projeta e opera infraestrutura em nuvem (AWS, Azure, GCP).", skills: "Cloud, Terraform, contêineres", level: "Pleno a sênior" }
+    ]
+  },
+  seg: {
+    label: "Segurança da Informação",
+    color: "coral",
+    intro: "Protege sistemas, dados e pessoas contra acessos indevidos e ataques.",
+    scheme: ["Identificar riscos", "Proteger", "Detectar", "Responder"],
+    roles: [
+      { name: "Analista de segurança", does: "Monitora ameaças e implementa controles de proteção.", skills: "SIEM, redes, normas de segurança", level: "Júnior a pleno" },
+      { name: "Pentester", does: "Simula ataques reais para encontrar vulnerabilidades antes dos criminosos.", skills: "Testes de invasão, exploração de falhas", level: "Pleno a sênior" },
+      { name: "Auditor / compliance", does: "Garante que a empresa segue normas e boas práticas de segurança.", skills: "LGPD, ISO 27001, auditoria", level: "Pleno" }
+    ]
+  },
+  qa: {
+    label: "Qualidade & Testes",
+    color: "amber",
+    intro: "Garante que o sistema funciona como deveria antes de chegar ao usuário final.",
+    scheme: ["Planejar testes", "Executar", "Registrar bugs", "Validar correção"],
+    roles: [
+      { name: "QA manual", does: "Testa o sistema manualmente, simulando o uso real.", skills: "Casos de teste, atenção a detalhes", level: "Júnior a pleno" },
+      { name: "QA de automação", does: "Escreve scripts que testam o sistema automaticamente.", skills: "Selenium, Cypress, programação", level: "Pleno" }
+    ]
+  },
+  gestao: {
+    label: "Gestão & Produto",
+    color: "purple",
+    intro: "Organiza pessoas, prioridades e prazos para que o time entregue valor de forma previsível.",
+    scheme: ["Priorizar", "Planejar", "Acompanhar", "Entregar"],
+    roles: [
+      { name: "Gerente de projetos", does: "Planeja prazos, custos e riscos de um projeto.", skills: "Cronogramas, PMBOK, comunicação", level: "Pleno a sênior" },
+      { name: "Product owner", does: "Define o que deve ser construído e prioriza o backlog.", skills: "Visão de produto, negociação", level: "Pleno a sênior" },
+      { name: "Scrum master", does: "Facilita o processo ágil e remove obstáculos do time.", skills: "Scrum, facilitação", level: "Pleno" },
+      { name: "Analista de sistemas", does: "Faz a ponte entre negócio e tecnologia, documentando requisitos.", skills: "UML, levantamento de requisitos", level: "Júnior a pleno" }
+    ]
+  },
+  ux: {
+    label: "UX/UI Design",
+    color: "pink",
+    intro: "Desenha como o usuário vê, entende e interage com o sistema.",
+    scheme: ["Pesquisar", "Prototipar", "Testar", "Refinar"],
+    roles: [
+      { name: "UX designer", does: "Pesquisa e desenha a experiência e os fluxos de uso.", skills: "Pesquisa, wireframes, fluxos", level: "Júnior a sênior" },
+      { name: "UI designer", does: "Desenha a interface visual: cores, tipografia, componentes.", skills: "Figma, design visual", level: "Júnior a sênior" },
+      { name: "UX researcher", does: "Conduz pesquisas com usuários para embasar decisões de design.", skills: "Entrevistas, testes de usabilidade", level: "Pleno" }
+    ]
+  }
+};
+
+const body = document.body;
+const branchGrid = document.getElementById("branchGrid");
+const detailView = document.getElementById("detailView");
+const coreBtn = document.getElementById("coreBtn");
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function renderBranchGrid() {
+  branchGrid.innerHTML = Object.keys(DATA).map(key => {
+    const b = DATA[key];
+    return `
+      <button class="branch-card" data-key="${key}" style="border-color:var(--${b.color}-line)">
+        <span class="branch-dot" style="background:var(--${b.color}-text)"></span>
+        <h3>${escapeHtml(b.label)}</h3>
+        <p>${escapeHtml(b.intro)}</p>
+        <span class="count">${b.roles.length} profissões</span>
+      </button>`;
+  }).join("");
+
+  branchGrid.querySelectorAll(".branch-card").forEach(card => {
+    card.addEventListener("click", () => showDetail(card.dataset.key));
+  });
+}
+
+function renderDetail(key) {
+  const b = DATA[key];
+  const scheme = b.scheme.map((s, i) =>
+    `<span class="step">${escapeHtml(s)}</span>` + (i < b.scheme.length - 1 ? `<span class="arrow">&#8594;</span>` : "")
+  ).join("");
+
+  const roleCards = b.roles.map(r => `
+    <div class="role-card" style="background:var(--${b.color}-fill)">
+      <h4 style="color:var(--${b.color}-text)">${escapeHtml(r.name)}</h4>
+      <p>${escapeHtml(r.does)}</p>
+    </div>`).join("");
+
+  const tableRows = b.roles.map(r => `
+    <tr>
+      <td class="role-name">${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.does)}</td>
+      <td>${escapeHtml(r.skills)}</td>
+      <td>${escapeHtml(r.level)}</td>
+    </tr>`).join("");
+
+  detailView.innerHTML = `
+    <button class="detail-back" id="backBtn">&#8592; Voltar para as áreas</button>
+    <div class="detail-head">
+      <div class="detail-badge" style="background:var(--${b.color}-fill); color:var(--${b.color}-text)">${escapeHtml(b.label[0])}</div>
+      <div>
+        <h2>${escapeHtml(b.label)}</h2>
+        <p>${escapeHtml(b.intro)}</p>
+      </div>
+    </div>
+
+    <p class="section-label">Fluxo de trabalho</p>
+    <div class="scheme">${scheme}</div>
+
+    <p class="section-label">Profissões nessa área</p>
+    <div class="role-grid">${roleCards}</div>
+
+    <p class="section-label">Comparação</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead>
+          <tr><th>Cargo</th><th>O que faz</th><th>Principais habilidades</th><th>Nível de entrada</th></tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", showList);
+}
+
+function showHome() {
+  body.dataset.state = "home";
+}
+function showList() {
+  body.dataset.state = "list";
+}
+function showDetail(key) {
+  renderDetail(key);
+  body.dataset.state = "detail";
+}
+
+coreBtn.addEventListener("click", () => {
+  if (body.dataset.state === "home") {
+    showList();
+  } else {
+    showHome();
+  }
+});
+
+renderBranchGrid();
+</script>
+
+</body>
+</html>
