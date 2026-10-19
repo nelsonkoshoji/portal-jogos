@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<title>Semana da Tecnologia ADS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  body { margin: 0; }
+  /* Layout: cabeçalho simples e uma grade única, agrupada por dia, com rolagem lateral só dentro da tabela. */
+  :root {
+    --bg: #fbfaf9;
+    --fg: #231f1f;
+    --muted: #6d6666;
+    --line: #dcd6d4;
+    --head-bg: #9f1d1d;
+    --head-fg: #ffffff;
+    --day-bg: #f0ebe9;
+    --hold-bg: #fff4d6;
+    --font-body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #181514; --fg: #efeae8; --muted: #a39b99; --line: #3a3433;
+      --head-bg: #7d1f1f; --head-fg: #fff; --day-bg: #262120; --hold-bg: #3a3118;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #181514; --fg: #efeae8; --muted: #a39b99; --line: #3a3433;
+    --head-bg: #7d1f1f; --head-fg: #fff; --day-bg: #262120; --hold-bg: #3a3118;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+    padding-block: 20px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  main { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 4px; text-wrap: balance; }
+  .sub { margin: 0 0 18px; color: var(--muted); }
+  .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  thead th { background: var(--head-bg); color: var(--head-fg); font-weight: 500; letter-spacing: .03em; }
+  tr.dia th { background: var(--day-bg); font-weight: 600; }
+  td.hora { white-space: nowrap; width: 170px; font-weight: 500; }
+  .periodo { display: block; font-size: .8rem; font-weight: 400; color: var(--muted); }
+  tr.reservado td { background: var(--hold-bg); }
+  td:empty::before { content: "—"; color: var(--muted); opacity: .5; }
+  tbody tr:last-child td { border-bottom: 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Semana da Tecnologia ADS</h1>
+<p class="sub">26 a 29 de outubro · Análise e Desenvolvimento de Sistemas</p>
+<div class="wrap">
+<table>
+<thead><tr><th>Horário</th><th>Palestra</th><th>Palestrante</th><th>Participantes</th><th>Local</th></tr></thead>
+<tbody>
+<tr class="dia"><th colspan="5" scope="colgroup">Segunda-feira · 26/10</th></tr>
+<tr><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">9h30 – 11h00<span class="periodo">Manhã · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">15h20 – 16h50<span class="periodo">Tarde · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">17h00 – 18h30<span class="periodo">Tarde · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">19h00 – 20h30<span class="periodo">Noite · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">20h40 – 22h10<span class="periodo">Noite · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr class="dia"><th colspan="5" scope="colgroup">Terça-feira · 27/10</th></tr>
+<tr class="reservado"><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td>Reservado</td><td></td><td></td><td></td></tr>
+<tr class="reservado"><td class="hora">9h30 – 11h00<span class="periodo">Manhã · 2º bloco</span></td><td>Reservado</td><td></td><td></td><td></td></tr>
+<tr><td class="hora">15h20 – 16h50<span class="periodo">Tarde · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">17h00 – 18h30<span class="periodo">Tarde · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">19h00 – 20h30<span class="periodo">Noite · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">20h40 – 22h10<span class="periodo">Noite · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr class="dia"><th colspan="5" scope="colgroup">Quarta-feira · 28/10</th></tr>
+<tr><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">9h30 – 11h00<span class="periodo">Manhã · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">15h20 – 16h50<span class="periodo">Tarde · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">17h00 – 18h30<span class="periodo">Tarde · 2º bloco</span></td><td>Palestra de ex-aluno (a confirmar)</td><td></td><td></td><td></td></tr>
+<tr><td class="hora">19h00 – 20h30<span class="periodo">Noite · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">20h40 – 22h10<span class="periodo">Noite · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr class="dia"><th colspan="5" scope="colgroup">Quinta-feira · 29/10</th></tr>
+<tr><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">9h30 – 11h00<span class="periodo">Manhã · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">15h20 – 16h50<span class="periodo">Tarde · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">17h00 – 18h30<span class="periodo">Tarde · 2º bloco</span></td><td>Palestra de ex-aluno</td><td></td><td></td><td></td></tr>
+<tr><td class="hora">19h00 – 20h30<span class="periodo">Noite · 1º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="hora">20h40 – 22h10<span class="periodo">Noite · 2º bloco</span></td><td></td><td></td><td></td><td></td></tr>
+</tbody>
+</table>
+</div>
+</main>
+</body>
+</html>
