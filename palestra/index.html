@@ -22,7 +22,7 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #181514; --fg: #efeae8; --muted: #a39b99; --line: #3a3433;
-      --head-bg: #7d1f1f; --head-fg: #fff; --day-bg: #262120; --hold-bg: #3a3118;
+      --head-bg: #7d1f1f; --head-fg: #fff; --day-bg: #262120; --hold-bg: #3a3118; --azul-bg: #b6f9f9
       color-scheme: dark;
     }
   }
@@ -48,6 +48,7 @@
   td.hora { white-space: nowrap; width: 170px; font-weight: 500; }
   .periodo { display: block; font-size: .8rem; font-weight: 400; color: var(--muted); }
   tr.reservado td { background: var(--hold-bg); }
+  tr.reservado1 td { background: var(--azul-bg); }
   td:empty::before { content: "—"; color: var(--muted); opacity: .5; }
   tbody tr:last-child td { border-bottom: 0; }
 </style>
@@ -61,7 +62,7 @@
 <thead><tr><th>Horário</th><th>Palestra</th><th>Palestrante</th><th>Participantes</th><th>Local</th></tr></thead>
 <tbody>
 <tr class="dia"><th colspan="5" scope="colgroup">Segunda-feira · 26/10</th></tr>
-<tr><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td>Aula Normal</td><td></td><td></td><td>Nas respectivas salas de cada turma</td></tr>
+<tr class="reservado1"><td class="hora">7h50 – 9h20<span class="periodo">Manhã · 1º bloco</span></td><td>Aula Normal</td><td></td><td></td><td>Nas respectivas salas de cada turma</td></tr>
 <tr><td class="hora">9h30 – 11h00<span class="periodo">Manhã · 2º bloco</span></td><td>Aula Normal</td><td></td><td></td><td>Nas respectivas salas de cada turma</td></tr>
 <tr><td class="hora">15h20 – 16h50<span class="periodo">Tarde · 1º bloco</span></td><td>Aula Normal</td><td></td><td></td><td>Nas respectivas salas de cada turma</td></tr>
 <tr><td class="hora">17h00 – 18h30<span class="periodo">Tarde · 2º bloco</span></td><td>Aula Normal</td><td></td><td></td><td>Nas respectivas salas de cada turma</td></tr>
